@@ -2,7 +2,7 @@
 
 Status: Ready for team review — interview complete.
 Named team approvers: Nadia and Patrick
-Approval status: Pending review.
+Approval status: Reviewed and approved by Patrick, November 22, 2026; Nadia's review pending.
 
 ## Purpose
 
@@ -220,4 +220,4 @@ remaining legs as partial results or change the route automatically.
 
 ## Open decisions
 
-- Final review and approval by Nadia and Patrick are pending.
+- Final review and approval by Nadia is pending.
