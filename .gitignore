@@ -1,0 +1,19 @@
+# Secrets: keys live in the environment, never in the repository
+.env
+.claude/settings.local.json
+
+# Virtual environment
+.venv/
+
+# Pending side-effect requests recorded by gated tools (reviewed by a person, not committed)
+pending.jsonl
+outbox/
+
+# Python build and test artifacts
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# macOS
+.DS_Store
