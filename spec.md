@@ -29,10 +29,11 @@ local stdio without remote hosting. Nadia reported a separate verbal grading
 expectation about deployment; that clarification is not treated as verified
 written policy here and does not change our chosen release scope.
 
-Week 9 remains a local-server milestone: implement the initial tools, verify
-them through the MCP protocol, and register the stdio server in Claude Code.
-Public hosting and package publishing are required for the final release,
-not for completing that initial milestone.
+The current implementation milestone covers the entire product described below:
+all five tools, both hosts, caching, evaluation, hosted deployment, and package
+publishing. The two-tool Week 9 lab is an intermediate verification checkpoint,
+not the completion boundary. Internal sequencing does not defer any of these
+deliverables to a separate implementation milestone.
 
 The implementation includes:
 
@@ -205,7 +206,8 @@ IATA codes are not already supplied. Not a reverse-lookup tool.
 **Result:** common envelope plus `matches`, an array of up to 10 objects with
 exactly `iata`, `name`, `city`, and `country`, all strings. Preserve upstream
 order among valid airport matches; do not return stations or invented IATA codes.
-Week 9 uses no cache and requires no Redis service. For the final release, cache
+The initial server checkpoint may run without a cache, but milestone completion
+requires caching. For the complete implementation, cache
 by normalized query; proposed normalization is trim, collapse whitespace, and
 case-fold. Backend, TTL, and unavailable-cache behavior remain open.
 
@@ -405,7 +407,7 @@ Provider documentation reviewed for this draft:
 | SearchApi adapter | Uses `httpx` to map typed requests to SearchApi and normalize responses; credentials stay server-side. | Python to share server types; a separate Node service would add an unnecessary deployment boundary. No model: explicit mappings are testable and must not invent fares. | Bound request time, count every attempted request, sanitize upstream errors, reject unusable data; fixtures replace HTTP in tests. |
 | Own loop (`agent.py`) | Discovers tools through MCP, sends schemas to OpenRouter, dispatches tool calls, and prints recommendations and sanitized step/cost logs. | Python and the OpenRouter SDK per brief; raw HTTP model calls considered but the SDK is required. Model candidates and evaluation decision are in section 2. | Pass sanitized tool errors back unchanged, enforce section 6 caps, stop explicitly on exhaustion. Missing required prompt details produce an actionable incomplete-task result; the noninteractive loop cannot invent them. |
 | Verification client (`client.py`) | Lists schemas and exercises tools through MCP without a model; uses the same protocol surface as the hosts. | Python for the official SDK; shell-only checks would not provide the same structured assertions. No model, deliberately, so protocol behavior can be inspected without model variability or token cost. | Display error results and fail clearly on connection/protocol errors. Live SearchApi calls can still incur search charges even without a model; offline fixtures do not. |
-| Cache (after Week 9) | Reuses normalized queries across repeated requests. Week 9 omits caching; final-release backend remains under review. | Python cache interface; Redis offers sharing across server processes, while in-memory storage avoids an extra service but is process-local and lost on restart. No model; cache policy is deterministic. | Offline tests use a fake cache. Set TTL and outage policy before enabling the selected backend. |
+| Cache (full implementation) | Reuses normalized queries across repeated requests. Caching is required for milestone completion; backend remains under review. | Python cache interface; Redis offers sharing across server processes, while in-memory storage avoids an extra service but is process-local and lost on restart. No model; cache policy is deterministic. | Offline tests use a fake cache. Set TTL and outage policy before enabling the selected backend. |
 | Distribution and hosted service (Gabriel) | Publishes the package and verifies clean `uvx` installation; deploys the HTTP server and verifies external-client access. | Reuse the Python server instead of a second-language implementation. No additional model in deployment; clients supply their own host models. | Release requires credential isolation, access control, spending limits, and installation/connection checks. Hosting platform and access-control implementation remain to be selected. |
 
 Claude Code is the other required host: configure it through `.mcp.json` and
@@ -458,7 +460,7 @@ timeout and bounded retries; exact values remain an implementation-plan decision
 | `pytest` | Offline protocol tests covering schemas, validation, empty results, and simulated upstream failures. |
 | `httpx` | HTTP client for SearchApi with async requests and explicit timeouts; preferred over stdlib `urllib` for integration with the async server. |
 | `pydantic` | Typed request/result validation and schema field constraints; explicit dependency because project code uses it directly. |
-| Redis client (optional, after Week 9) | Install only if Redis is selected for final-release shared caching. In-memory cache is the alternative; neither Redis nor a cache service is required for Week 9 or offline CI. |
+| Redis client (conditional on backend decision) | Install only if Redis is selected for final-release shared caching. In-memory cache is the alternative; neither Redis nor a cache service is required for Week 9 or offline CI. |
 | OpenRouter SDK (package/version pending) | Agent-loop intent requires non-streaming model calls through OpenRouter. |
 
 ## 8. Cost estimate
@@ -476,7 +478,8 @@ package publication and deployment still require their own operating estimates.
   split infant counts, customization IDs, calendar limits, and
   exact-date historical comparisons. Verify pricing units and complete-trip
   provider mappings with fixtures before implementation.
-- **Caching:** after Week 9, choose Redis versus in-memory caching, TTLs, and
+- **Caching:** reconcile the newer airport intent selecting Redis with the
+  spec, choose the client package, and define flight-cache TTLs and
   outage behavior. Offline tests use a fake cache and require no Redis service.
 - **Loop:** evaluate the two model candidates recorded in the agent-loop intent;
   validate cost reservations and choose upstream request-cap defaults.
