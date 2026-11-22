@@ -22,8 +22,11 @@ A normal result with an empty `matches` list and a message means "nothing matche
 - A query the upstream cannot answer (HTTP error, missing key, quota) raises `ToolError` with a message the model can act on. The key itself is never in the message.
 - Out of scope: reverse lookup (IATA → city), airlines, train stations, ICAO/FAA codes.
 - Tests cover, with a fake upstream: schema listing, wrong-type rejection without running the function, out-of-range input, empty result, upstream failure.
+- Location Search responses are cached, keyed by the normalized query, so repeating a lookup does not call SearchApi again or spend another search. The cache is Redis, which gives fast, low-cost lookups that are safe under concurrent access and shared by both hosts (Claude Code and our loop).
+- Test fixtures come from a real Location Search response, recorded once with the API key removed.
 
 ## Open decisions
 
-- Whether to cache Location Search responses in memory keyed by query, so a single agent run isn't recharged for the same lookup.
-- Where the Location Search fixture for the upstream-failure test comes from — recorded real response or hand-built sample.
+- How long a cached lookup stays valid (TTL). Airport lists rarely change, so this can be long.
+- How tests and CI run without a Redis server (a fake cache in tests, or a Redis service in CI), and what the server does if Redis is not running.
+- Redis is a new dependency: record it in `spec.md` under Dependencies with its reason, and the alternative considered (an in-memory cache, which is lost when the server restarts and not shared between hosts).
