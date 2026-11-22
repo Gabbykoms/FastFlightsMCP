@@ -9,7 +9,7 @@ Named team approver: Nadia Boudhaim Maguire
 
 ## User experience
 
-The model calls `search_airports("new york")` when it has a city and needs the IATA. The tool returns up to 10 airports in the order the API returned them, each with `iata`, `name`, `city`, `country`. The model picks one and uses it as the origin or destination of `search_flights`. When the list is empty the model rephrases and tries again — there is no fuzzy fallback of our own.
+The model calls `search_airports("new york")` when it has a city and needs the IATA. The tool returns up to 10 airports in the order the API returned them, each with `iata`, `name`, `city`, `country`. The model passes all relevant matches as the origin or destination list for `search_flights`, or only the airport the user named, if they named one. When the list is empty the model rephrases and tries again — there is no fuzzy fallback of our own.
 
 A normal result with an empty `matches` list and a message means "nothing matched"; the model should recover. A `ToolError` only happens when the upstream itself fails (missing key, HTTP error, quota).
 
@@ -24,9 +24,10 @@ A normal result with an empty `matches` list and a message means "nothing matche
 - Tests cover, with a fake upstream: schema listing, wrong-type rejection without running the function, out-of-range input, empty result, upstream failure.
 - Location Search responses are cached, keyed by the normalized query, so repeating a lookup does not call SearchApi again or spend another search. The cache is Redis, which gives fast, low-cost lookups that are safe under concurrent access and shared by both hosts (Claude Code and our loop).
 - Test fixtures come from a real Location Search response, recorded once with the API key removed.
+- If Redis is not running, the server logs a warning and works without the cache; lookups still succeed.
+- Tests use a fake cache, so they need neither Redis nor an API key.
+- Cached lookups stay valid for 30 days, since airport lists rarely change.
 
 ## Open decisions
 
-- How long a cached lookup stays valid (TTL). Airport lists rarely change, so this can be long.
-- How tests and CI run without a Redis server (a fake cache in tests, or a Redis service in CI), and what the server does if Redis is not running.
-- Redis is a new dependency: record it in `spec.md` under Dependencies with its reason, and the alternative considered (an in-memory cache, which is lost when the server restarts and not shared between hosts).
+- Which Redis client package and version to use, recorded in spec.md under Dependencies.
