@@ -37,10 +37,26 @@ Google Flights has the best fare coverage of any consumer search engine, but it 
 | Concern         | Choice                                                                 |
 | --------------- | ---------------------------------------------------------------------- |
 | Language        | Python 3.11+                                                           |
-| MCP framework   | [`mcp`](https://github.com/modelcontextprotocol/python-sdk) (FastMCP)  |
+| MCP framework   | Official [`mcp`](https://github.com/modelcontextprotocol/python-sdk) SDK v2: `MCPServer` from `mcp.server`, as required by the lab |
 | Flights backend | [`fast-flights`](https://github.com/AWeirdDev/fast-flights) (Google Flights query builder + parser) |
 | Validation      | Pydantic models for tool inputs and outputs                            |
 | Packaging       | `uv` / `pyproject.toml`, runnable through `uvx fastflights-mcp`        |
+
+The SDK version and installation requirements will be checked against the professor's worked example before implementation. Both the root `server.py` launcher and the published `fastflights-mcp` console command will call the same `main()` entry point in `fastflights_mcp.server`. Publishing through `uvx` remains part of the project.
+
+### Week 9 working rules
+
+Follow the [lab instructions](lab.md), with `search_flights` and `search_airports` as the initial tools. The other tools and HTTP hosting remain on the roadmap.
+
+- Record tool contracts and dependency reasons in `spec.md`, including `mcp` and `pytest`. Maintain `requirements.txt` alongside `pyproject.toml` for the lab setup.
+- Write the Week 9 plan before code: responsibilities, work order, risks, and proof for each tool. Answer at least two lab review questions and record **Approved by** in `plan.md`.
+- Record the lab's working rules in `CLAUDE.md`; the assigned AI-assisted stages are plan and tests. Write and run tests before implementing each tool, and commit the failing tests separately.
+- Test through the MCP protocol with an in-memory `Client(mcp)`, with no model, network, or subprocess. Each tool needs at least five tests: discovery/schema, wrong types without executing the function, out-of-range inputs, normal empty/not-found results, and simulated backend failures.
+- Define schemas with type hints and `Annotated`/`Field` descriptions and limits. Specify input bounds and date rules in `spec.md`. Docstrings must explain when to call each tool; team members review and rewrite them.
+- Return actionable failures through `ToolError`. Use logging; never print to the server's stdout, which carries protocol messages.
+- Read credentials from the server environment and never return them in tool results. Ignore `.venv/`, secrets, and pending/outbox files in Git.
+- The initial tools are read-only. Any future tool with a side effect records a pending request for a person to complete. Its tests must prove that the request is recorded and nothing has left the machine.
+- Record actual verification evidence in `CHECKS.md`: client schemas/results, the temporary stdout-breakage experiment (remove the print afterward), test counts, Claude Code behavior, server-versus-script reasoning, and the side-effect gate or first planned side-effect tool.
 
 ---
 
@@ -113,6 +129,8 @@ Return Google's "prices are currently low / typical / high" signal for a route w
 
 ## Installation (planned)
 
+These commands describe the intended setup once the implementation and packaging files exist. The `uvx` command requires publishing the package first.
+
 ```bash
 # Run directly
 uvx fastflights-mcp
@@ -141,6 +159,34 @@ Add to `claude_desktop_config.json`:
 
 ### Claude Code
 
+For the Week 9 lab, commit this `.mcp.json` in the repository root:
+
+```json
+{
+  "mcpServers": {
+    "fastflights": {
+      "command": "python3",
+      "args": ["server.py"]
+    }
+  }
+}
+```
+
+With the planned files in place, set up the local package so the root launcher can import it:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+python3 -m pip install -r requirements.txt
+python3 -m pip install -e .
+python3 client.py
+orclaude
+```
+
+Start `orclaude` from the repository root with the virtual environment active, approve the server, and check `/mcp`. Ask a question requiring a tool, then export the session with `/export transcripts/week09-claude-code.txt`. Every teammate runs the verification locally; one committed transcript is sufficient. If a side-effect tool is added, exercise its pending-request behavior too.
+
+Published-package installation remains available as a separate planned option:
+
 ```bash
 claude mcp add fastflights -- uvx fastflights-mcp
 ```
@@ -164,7 +210,7 @@ claude mcp add fastflights -- uvx fastflights-mcp
 ```
 FastFlightsMCP/
 ├── src/fastflights_mcp/
-│   ├── server.py        # MCP server + tool registration
+│   ├── server.py        # MCPServer, tool registration, shared main() entry point
 │   ├── tools/           # One module per tool
 │   ├── google/          # Query building, fetching, parsing
 │   ├── models.py        # Pydantic input/output schemas
@@ -172,14 +218,29 @@ FastFlightsMCP/
 │   └── cache.py         # TTL cache + rate limiter
 ├── tests/
 │   ├── fixtures/        # Saved Google Flights responses for offline tests
-│   └── ...
-├── pyproject.toml
+│   ├── test_search_flights.py  # In-memory MCP protocol tests
+│   └── test_search_airports.py
+├── server.py            # Root launcher calling the package's main()
+├── client.py            # Host without a model; lists schemas and calls tools
+├── .mcp.json            # Shared local Claude Code registration
+├── .gitignore
+├── pyproject.toml       # uv packaging + fastflights-mcp console entry point
+├── requirements.txt     # Lab dependencies, including mcp and pytest
+├── spec.md              # Tool contracts and dependency reasons
+├── plan.md              # Week 9 plan, responsibilities, proof, approval
+├── CLAUDE.md            # Working rules
+├── CHECKS.md            # Actual verification output and findings
+├── transcripts/
+│   └── week09-claude-code.txt
+├── lab.md               # Downloaded professor's instructions
 └── README.md
 ```
 
 ---
 
 ## Roadmap
+
+Week 9 follows the lab's commit sequence: working rules, approved plan, failing tests per tool, implementation per tool, then checks and findings. After verification, tag the submission `week09-submitted` and push the commits and tag. The team makes one Moodle submission.
 
 - [ ] **v0.1** Core server, `search_flights` (one-way + round-trip), `search_airports`
 - [ ] **v0.2** Caching, rate limiting, and sturdier parsing with fixture-based tests
