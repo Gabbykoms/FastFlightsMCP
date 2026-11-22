@@ -2,7 +2,7 @@
 
 **Status:** Draft — specification decisions in progress; not approved for implementation
 **Date:** 2026-11-22
-**Inputs:** `intent/*.md`, `README.md`, Team Project 2 sheet
+**Inputs:** `intent/*.md`, `README.md`, [Team Project 2 brief](https://github.com/kousen/ai-integration-course/blob/main/assignments/team-project-2.md), [worked MCP example](https://github.com/kousen/ai-integration-course/tree/main/examples/mcp-server)
 **No code is written in this document.** Interfaces are signatures and payload shapes only.
 
 ## 1. The task
@@ -19,6 +19,20 @@ The project does not book flights or process payments.
 This implementation covers the complete product and its public release, not
 only the initial Week 9 tools. The lab's milestones guide the work order rather
 than limit the delivered scope.
+
+Gabriel owns hosted deployment and package distribution, including publishing
+to PyPI for use through `uvx`. Both remain required final-release deliverables.
+The purpose is to let people outside the team either connect to the hosted
+server or install and run it locally. This is an explicit project scope decision,
+independent of the minimum course requirements. The linked written brief permits
+local stdio without remote hosting. Nadia reported a separate verbal grading
+expectation about deployment; that clarification is not treated as verified
+written policy here and does not change our chosen release scope.
+
+Week 9 remains a local-server milestone: implement the initial tools, verify
+them through the MCP protocol, and register the stdio server in Claude Code.
+Public hosting and package publishing are required for the final release,
+not for completing that initial milestone.
 
 The implementation includes:
 
@@ -57,19 +71,45 @@ search intents.
 ### Language
 Python 3.11+, as established in the README and required by the lab. JavaScript/
 TypeScript is an alternative, but would not meet the lab's Python requirement.
-The lab requires the official `mcp` SDK v2 and `MCPServer`; confirm the exact
-package version and interfaces against the course example before implementation.
+The lab requires the official `mcp` SDK v2 and `MCPServer`; the linked course example reports testing version 2.3.0. Verify the installed
+version and interfaces when implementing rather than assuming compatibility.
 
 ### Model
-<!-- A cheap model and a stronger one, both with tool calling; the alternative considered. -->
+Use the OpenRouter SDK with one tool-capable model per run and no streaming.
+The provisional low-cost baseline is `minimax/minimax-m3`; the comparison
+candidate is `anthropic/claude-haiku-4.5`, chosen to test whether higher cost
+improves task completion and tool-use reliability. "Stronger" is the evaluation
+hypothesis, not a measured project result. Compare both on the same prompts,
+tool schemas, and caps; record task correctness, invalid calls, cap hits,
+latency, and actual cost before choosing the final model. Do not switch models
+mid-run to hide a failed evaluation.
+
+The model IDs and tool-use offerings are documented by OpenRouter:
+[MiniMax M3](https://openrouter.ai/minimax/minimax-m3) and
+[Claude Haiku 4.5](https://openrouter.ai/anthropic/claude-haiku-4.5/api).
+Check endpoint tool support and pricing at evaluation time. No model is embedded
+in the server or the no-model verification client.
+
+### Data provider and airport selection
+
+**Decided:** use SearchApi for all five tools. The server calls its flight,
+calendar, and location-search engines through `httpx`; it does not scrape
+Google Flights HTML itself. Keep `SEARCHAPI_API_KEY` in the server environment.
+Provider response mappings still require sanitized fixture verification.
+
+**Decided:** use AirportSet arrays for all relevant airports returned for a city;
+preserve a specific user-requested airport as a singleton. Do not arbitrarily
+pick one city airport. Nadia owns aligning the airport intent with this decision.
+Use the provider's multi-airport query support where applicable instead of
+unnecessarily issuing one request per airport combination.
 
 ## 3. The server's tools
 
 These are draft public contracts, not provider payloads. Rules already agreed
 in `intent/*.md` remain requirements. New schema choices, numeric bounds, and
 responsibility assignments below are **proposals for team review**, not approvals.
-SearchApi mappings are provisional until the provider decision in section 9 is
-resolved. No live paid calls have been made to validate these contracts.
+SearchApi is the chosen provider; individual response mappings remain provisional
+until fixture validation. No live paid calls have been made to validate these contracts.
 
 ### 3.1 Shared contract and responsibilities
 
@@ -165,16 +205,17 @@ IATA codes are not already supplied. Not a reverse-lookup tool.
 **Result:** common envelope plus `matches`, an array of up to 10 objects with
 exactly `iata`, `name`, `city`, and `country`, all strings. Preserve upstream
 order among valid airport matches; do not return stations or invented IATA codes.
-Cache by normalized query in Redis. Proposed normalization: trim, collapse
-whitespace, and case-fold; TTL and unavailable-cache behavior remain open.
+Week 9 uses no cache and requires no Redis service. For the final release, cache
+by normalized query; proposed normalization is trim, collapse whitespace, and
+case-fold. Backend, TTL, and unavailable-cache behavior remain open.
 
 **Not found:** `matches: []` with an explanatory message, normal success. The
 host may rephrase the query within its step/cost caps.
 
 **Errors:** shared errors, including missing key, quota, and malformed upstream
 results. Verify a recorded fixture contains every required airport field before
-promising this mapping. City expansion follows the flight intents; the airport
-intent's instruction to pick one match must be reconciled with them.
+promising this mapping. City expansion follows the decided AirportSet policy
+in section 2; the older pick-one wording in the airport intent is superseded.
 
 ### 3.3 `search_flights`
 
@@ -358,54 +399,88 @@ Provider documentation reviewed for this draft:
 
 ## 4. Components
 
-<!-- For each component (server, own loop, ...): what it does, language decision with
-     alternative, model decision with alternative, interfaces, failure handling. -->
+| Component | Responsibility and interfaces | Language and model decisions | Failure handling |
+|---|---|---|---|
+| MCP server (`server.py`, package entry point) | Exposes section 3 tools over stdio and streamable HTTP; shares the same implementation between both transports. | Python as required by the course; TypeScript considered but incompatible with that requirement. No model: deterministic validation and provider access belong in code rather than an embedded LLM. | Strict validation, sanitized `ToolError`, stderr logging, request limits; no protocol output through `print`. |
+| SearchApi adapter | Uses `httpx` to map typed requests to SearchApi and normalize responses; credentials stay server-side. | Python to share server types; a separate Node service would add an unnecessary deployment boundary. No model: explicit mappings are testable and must not invent fares. | Bound request time, count every attempted request, sanitize upstream errors, reject unusable data; fixtures replace HTTP in tests. |
+| Own loop (`agent.py`) | Discovers tools through MCP, sends schemas to OpenRouter, dispatches tool calls, and prints recommendations and sanitized step/cost logs. | Python and the OpenRouter SDK per brief; raw HTTP model calls considered but the SDK is required. Model candidates and evaluation decision are in section 2. | Pass sanitized tool errors back unchanged, enforce section 6 caps, stop explicitly on exhaustion. Missing required prompt details produce an actionable incomplete-task result; the noninteractive loop cannot invent them. |
+| Verification client (`client.py`) | Lists schemas and exercises tools through MCP without a model; uses the same protocol surface as the hosts. | Python for the official SDK; shell-only checks would not provide the same structured assertions. No model, deliberately, so protocol behavior can be inspected without model variability or token cost. | Display error results and fail clearly on connection/protocol errors. Live SearchApi calls can still incur search charges even without a model; offline fixtures do not. |
+| Cache (after Week 9) | Reuses normalized queries across repeated requests. Week 9 omits caching; final-release backend remains under review. | Python cache interface; Redis offers sharing across server processes, while in-memory storage avoids an extra service but is process-local and lost on restart. No model; cache policy is deterministic. | Offline tests use a fake cache. Set TTL and outage policy before enabling the selected backend. |
+| Distribution and hosted service (Gabriel) | Publishes the package and verifies clean `uvx` installation; deploys the HTTP server and verifies external-client access. | Reuse the Python server instead of a second-language implementation. No additional model in deployment; clients supply their own host models. | Release requires credential isolation, access control, spending limits, and installation/connection checks. Hosting platform and access-control implementation remain to be selected. |
+
+Claude Code is the other required host: configure it through `.mcp.json` and
+save evidence of the same task being completed through the same tools. Its
+model configuration belongs to the host; the MCP server does not choose it.
 
 ## 5. Side effects and the gate
 
 Flight tools do not purchase tickets, send messages, or make reservations.
 Any future tool with an external write effect must record a pending request
 for a person to complete, following `CLAUDE.md`. SearchApi queries consume
-billed searches; their request limits and cost accounting must be agreed before
-implementation. Cache writes support lookups and do not authorize bookings.
+billed searches. They may run unattended only under operator-configured request
+and spending allowances: the user requests the search, inputs are validated,
+and the server rejects requests when the allowance is exhausted. Do not treat
+possession of an API key as permission for unlimited spending. No automatic
+quota purchase or account upgrade is allowed. Cache writes support lookups and
+do not authorize bookings.
 
 ## 6. Limits
 
 The agent-loop intent sets an eight-step cap and a $0.05 USD model-cost cap
 per run, with no overall wall-clock timeout. The loop stops at either cap.
-How billed search requests are bounded and accounted for remains open; do not
-claim the model-cost cap also covers SearchApi charges.
+A step is one model request, including a request that returns the final answer.
+Add a maximum of 10 MCP tool-call attempts per run; count each call in a batch
+separately, including failed calls. Check the allowance before dispatch, so a
+batch cannot exceed the cap. These counts differ because one model response
+can request multiple tools.
+
+Maintain a separate SearchApi ledger: attempted upstream requests (including
+retries and selection follow-ups), provider-confirmed billed searches when
+available, cache hits, and estimated/confirmed cost. A tool-call cap alone is
+not a search-spend cap. Enforce operator-configured per-tool and per-run
+upstream request limits before each request; numeric defaults must be tested
+against multi-city completion before final approval. Public hosting also needs
+per-caller allowances so direct MCP clients cannot bypass loop limits.
+
+The $0.05 allowance covers model use only. Before a model call, reserve its
+maximum permitted token cost within the remaining allowance, then reconcile
+with actual reported usage; do not describe checking after spending as a hard
+cap. Refuse further calls if a safe bound cannot be established. SearchApi
+charges are recorded separately and require their own configured allowance.
+No overall run timeout is imposed, but each HTTP request must have a finite
+timeout and bounded retries; exact values remain an implementation-plan decision.
 
 ## 7. Dependencies
 
 | Dependency | Reason |
 |---|---|
-| `mcp` | Official MCP server and protocol interfaces required by the lab; exact version pending verification against the course example. |
+| `mcp` | Official MCP server and protocol interfaces required by the lab; course example reports 2.3.0; verify and pin the working version during implementation. |
 | `pytest` | Offline protocol tests covering schemas, validation, empty results, and simulated upstream failures. |
-| Redis client (package/version pending) | Airport intent requires a shared Redis cache; alternative: in-memory caching, which is lost on restart and not shared across server processes. |
+| `httpx` | HTTP client for SearchApi with async requests and explicit timeouts; preferred over stdlib `urllib` for integration with the async server. |
+| `pydantic` | Typed request/result validation and schema field constraints; explicit dependency because project code uses it directly. |
+| Redis client (optional, after Week 9) | Install only if Redis is selected for final-release shared caching. In-memory cache is the alternative; neither Redis nor a cache service is required for Week 9 or offline CI. |
 | OpenRouter SDK (package/version pending) | Agent-loop intent requires non-streaming model calls through OpenRouter. |
 
 ## 8. Cost estimate
 
-Pending provider selection, current pricing verification, and measured model
-usage. Track model tokens and billed upstream searches separately.
+SearchApi is selected. Record model and provider prices at evaluation time and
+measure usage rather than inventing a total. Keep a running cost ledger in the
+README with separate model-token charges and SearchApi search charges, plus
+hosting/distribution costs when applicable. Record cap hits in evaluations.
+The course brief asks for an explanation if the total exceeds about $10;
+package publication and deployment still require their own operating estimates.
 
 ## 9. Decisions to resolve
 
-- **Flight data provider:** README proposes `fast-flights`, while airport lookup
-  and price insight intents select SearchApi and cheapest dates proposes it.
-  Confirm whether SearchApi replaces `fast-flights` for all flight tools.
-- **Airport selection:** airport intent says the model picks one match; flight
-  and multi-city intents require searching all relevant airports. Reconcile
-  the host behavior before defining flight-search inputs.
 - **Tool contracts:** review section 3 proposals, especially server-owned ranking,
-  airport arrays, split infant counts, customization IDs, calendar limits, and
+  split infant counts, customization IDs, calendar limits, and
   exact-date historical comparisons. Verify pricing units and complete-trip
   provider mappings with fixtures before implementation.
-- **Caching:** choose TTLs, Redis-unavailable behavior, and offline test strategy.
+- **Caching:** after Week 9, choose Redis versus in-memory caching, TTLs, and
+  outage behavior. Offline tests use a fake cache and require no Redis service.
 - **Loop:** evaluate the two model candidates recorded in the agent-loop intent;
-  define step counting and enforcement of model and upstream search budgets.
+  validate cost reservations and choose upstream request-cap defaults.
 - **Remaining intent decisions:** resolve calendar window/trip-length limits and
   price-insight comparison behavior before finalizing those contracts.
-- **Course inputs:** locate the Team Project 2 sheet and worked MCP example
-  referenced by `lab.md`; they are not included in the current repository files.
+- **Release operations:** Gabriel will select hosting, access controls, and
+  publishing setup; both deployment and distribution remain required.
