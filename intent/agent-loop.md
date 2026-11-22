@@ -20,6 +20,7 @@ If a tool returns an error, the error text is passed back to the model unchanged
 - Task: given a round trip in plain words plus a date window, resolve airports, find cheapest dates, search flights, recommend one with reasons.
 - openrouter SDK, no streaming. Tool error text is passed back to the model unchanged. Error text never contains the API key.
 - Final output: a final recommendation plus a console step log with `tool`, `args`, a short `result`, `tokens`, and `cost` per step. One run saved under `transcripts/`.
+- The loop is non-interactive: every task prompt states origin, destination, dates, and cabin, because the search-flights intent requires the host to ask for these when missing.
 
 ## Open decisions
 
