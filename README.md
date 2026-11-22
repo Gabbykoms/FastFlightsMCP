@@ -14,23 +14,23 @@ The assistant calls FastFlightsMCP's tools, gets structured flight data back, an
 
 Google Flights has the best fare coverage of any consumer search engine, but it has **no official public API** (Google retired QPX Express in 2018). FastFlightsMCP fills that gap for AI assistants by:
 
-- Building Google Flights search queries programmatically
-- Parsing the results into clean, typed JSON
+- Querying SearchApi for Google Flights data
+- Normalizing provider responses into clean, typed JSON
 - Exposing them as MCP tools that an LLM can call
 
 ## How it works
 
 ```
 ┌──────────────┐   MCP (stdio / HTTP)   ┌──────────────────┐   HTTPS   ┌────────────────┐
-│ MCP client   │ ─────────────────────▶ │  FastFlightsMCP  │ ────────▶ │ Google Flights │
+│ MCP client   │ ─────────────────────▶ │  FastFlightsMCP  │ ────────▶ │ SearchApi      │
 │ (Claude etc.)│ ◀───────────────────── │  server (Python) │ ◀──────── │                │
-└──────────────┘    structured JSON     └──────────────────┘   HTML    └────────────────┘
+└──────────────┘    structured JSON     └──────────────────┘   JSON    └────────────────┘
 ```
 
 1. The client calls a tool such as `search_flights` with origin, destination, dates, and filters.
-2. The server encodes the search into a Google Flights query (the protobuf-encoded `tfs` URL parameter Google Flights uses).
-3. It fetches the results page and parses itineraries: airlines, times, stops, duration, price.
-4. Results are normalized, cached briefly, and returned to the client with a Google Flights link the user can open to book.
+2. The server validates the request and calls the appropriate SearchApi engine using server-held credentials.
+3. It completes any required flight selections and normalizes itineraries: airlines, times, stops, duration, and price.
+4. Eligible results are returned with Google Flights links. Week 9 runs without caching; final-release caching is planned, with the backend still under discussion.
 
 ### Planned stack
 
@@ -38,7 +38,7 @@ Google Flights has the best fare coverage of any consumer search engine, but it 
 | --------------- | ---------------------------------------------------------------------- |
 | Language        | Python 3.11+                                                           |
 | MCP framework   | Official [`mcp`](https://github.com/modelcontextprotocol/python-sdk) SDK v2: `MCPServer` from `mcp.server`, as required by the lab |
-| Flights backend | [`fast-flights`](https://github.com/AWeirdDev/fast-flights) (Google Flights query builder + parser) |
+| Flights backend | [SearchApi](https://www.searchapi.io/docs/google-flights-api) for all five tools, accessed through `httpx` |
 | Validation      | Pydantic models for tool inputs and outputs                            |
 | Packaging       | `uv` / `pyproject.toml`, runnable through `uvx fastflights-mcp`        |
 
@@ -199,9 +199,9 @@ claude mcp add fastflights -- uvx fastflights-mcp
 | ------------------------- | -------- | ------------------------------------------------- |
 | `FASTFLIGHTS_CURRENCY`    | `USD`    | Default currency for prices                       |
 | `FASTFLIGHTS_LANGUAGE`    | `en`     | Language for Google Flights results               |
-| `FASTFLIGHTS_CACHE_TTL`   | `600`    | Seconds to cache identical searches               |
+| `FASTFLIGHTS_CACHE_TTL` | TBD | Post-Week-9 setting; cache backend and TTL remain under review |
 | `FASTFLIGHTS_RATE_LIMIT`  | `10`     | Max outbound requests per minute                  |
-| `FASTFLIGHTS_FETCH_MODE`  | `common` | `common` (direct HTTP) or `fallback` (headless browser when blocked) |
+| `SEARCHAPI_API_KEY` | Required | Server-only SearchApi credential; never commit or return it |
 
 ---
 
@@ -212,7 +212,7 @@ FastFlightsMCP/
 ├── src/fastflights_mcp/
 │   ├── server.py        # MCPServer, tool registration, shared main() entry point
 │   ├── tools/           # One module per tool
-│   ├── google/          # Query building, fetching, parsing
+│   ├── google/          # SearchApi requests and response normalization
 │   ├── models.py        # Pydantic input/output schemas
 │   ├── airports.py      # IATA lookup (bundled airport dataset)
 │   └── cache.py         # TTL cache + rate limiter
@@ -243,7 +243,7 @@ FastFlightsMCP/
 Week 9 follows the lab's commit sequence: working rules, approved plan, failing tests per tool, implementation per tool, then checks and findings. After verification, tag the submission `week09-submitted` and push the commits and tag. The team makes one Moodle submission.
 
 - [ ] **v0.1** Core server, `search_flights` (one-way + round-trip), `search_airports`
-- [ ] **v0.2** Caching, rate limiting, and sturdier parsing with fixture-based tests
+- [ ] **v0.2** Caching, rate limiting, and provider-response handling with fixture-based tests
 - [ ] **v0.3** `find_cheapest_dates` and `search_multi_city`
 - [ ] **v0.4** Price insights, streamable HTTP transport for remote hosting
 - [ ] **Later** Price-watch alerts, alternate airports, and baggage/fare-class details
@@ -252,7 +252,7 @@ Week 9 follows the lab's commit sequence: working rules, approved plan, failing 
 
 ## Limitations & disclaimer
 
-- **Unofficial.** This project is not affiliated with or endorsed by Google. It reads publicly visible Google Flights results; Google can change its page format at any time, which may break parsing until the project is updated.
+- **Unofficial.** This project is not affiliated with or endorsed by Google. It uses SearchApi to retrieve Google Flights data; upstream response changes can require adapter updates.
 - **Respect the source.** Built-in caching and rate limiting keep traffic low. Don't use this for bulk scraping, and review Google's Terms of Service for your use case.
 - **Prices aren't guaranteed.** Fares change constantly. Always confirm on the booking link before purchasing.
 - **No booking.** FastFlightsMCP searches only; it never purchases tickets or handles payment.
@@ -260,3 +260,17 @@ Week 9 follows the lab's commit sequence: working rules, approved plan, failing 
 ## License
 
 MIT (TBD)
+
+## Cost ledger
+
+Record actual billed usage after each evaluation or live verification. Model
+charges and SearchApi charges are separate; a model-free client can still incur
+SearchApi charges. No spending totals have been verified for this draft.
+
+| Category | Recorded total | Evidence |
+|---|---|---|
+| OpenRouter model calls | Pending reconciliation | Provider usage and evaluation logs |
+| SearchApi searches | Pending reconciliation | Attempt counts and provider billing records |
+| Hosting / distribution | Pending setup | Deployment and release records |
+
+Explain project totals above about $10, as requested by the course brief.
