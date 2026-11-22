@@ -1,8 +1,8 @@
 # FastFlightsMCP: Flight search
 
-Status: Ready for team review — interview complete.
+Status: Approved — interview complete.
 Named team approvers: Nadia and Patrick
-Approval status: Pending review.
+Approval status: Reviewed and approved by Nadia and Patrick, November 22, 2026.
 
 ## Purpose
 
@@ -167,4 +167,4 @@ to ask the user itself.
 
 ## Open decisions
 
-- Final review and approval by Nadia and Patrick are pending.
+- None. Reviewed and approved by Nadia and Patrick.
