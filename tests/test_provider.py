@@ -29,7 +29,9 @@ not exhaustive.
 
 Pricing: SearchApi's `price` is the party total. For adults-only parties the candidate's
 price_per_person is price / adults. Parties with children or infants are deliberately
-not specified here; that decision is still open.
+not specified here; that decision is still open. Recorded evidence: with one child, four
+options cost 2x the adult price but one (AT 201 + AT 980) costs 993 instead of 1042, so
+a child's fare can differ and a party total cannot be divided by headcount.
 """
 import copy
 import importlib
