@@ -26,3 +26,9 @@ def main(argv: Sequence[str] | None = None) -> None:
         mcp.run(transport="streamable-http", host="127.0.0.1", port=8000)
     else:
         mcp.run(transport="stdio")
+
+
+# Tool modules register on `mcp` as a side effect of import. Import them here
+# so registration happens whenever the package is loaded, not only when the
+# server starts.
+import fastflights_mcp.tools.search_airports  # noqa: E402, F401
