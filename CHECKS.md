@@ -122,13 +122,54 @@ adults
 ```
 
 ### The stray `print` error
+
+Experiment (2026-11-23, Python 3.12.4, mcp 2.3.0): added `print("hello")` as the
+first line of the `search_flights` tool body, ran `.venv/bin/python client.py`,
+then removed the `print`. The client logged this on stderr when the tool ran:
+
 ```text
+Failed to parse JSONRPC message from server
+Traceback (most recent call last):
+  File ".../site-packages/mcp/client/stdio.py", line 222, in _parse_line
+    message = types.jsonrpc_message_adapter.validate_json(line, by_name=False)
+pydantic_core._pydantic_core.ValidationError: 1 validation error for union[JSONRPCRequest,JSONRPCNotification,JSONRPCResponse,JSONRPCError]
+  Invalid JSON: expected value at line 1 column 1 [type=json_invalid, input_value='hello', input_type=str]
 ```
 
+Why: over stdio the server's stdout *is* the protocol channel, so the host tries to
+parse every line it receives as a JSON-RPC message, and `hello` is not one. In this
+SDK version the client logged the bad line and skipped it, so `client.py` still
+exited 0 and both calls completed; a host is not required to be that forgiving, and
+any output that happened to look like a partial message could corrupt the stream.
+This is why the server logs with `logging` (stderr) and prints nothing.
+
 ### Server or skill?
-<!-- One paragraph: why this task needs a server, and one piece of it that could have
-     been a script or a skill instead, with the reason for the choice. -->
+
+This task needs a server. The tools wrap an external, billed system (SearchApi) that
+needs a credential, and the server keeps `SEARCHAPI_API_KEY` in its own environment
+so neither host nor model ever sees it. Team Project 2 also requires the same tools
+in two hosts (Claude Code and our own agent loop); a server lets both discover and
+call identical tools and schemas without sharing code. One piece could have been a
+skill or script instead: `search_airports` is a single lookup that turns a city name
+into airport codes, and if the only host were a coding agent with a shell, a skill
+running a short script would do the job. We kept it in the server because our own
+loop has no shell or skills, both hosts need it, and it shares the server's
+credential, error categories, and planned caching.
 
 ### The gate
-<!-- For the tool that changes something: what the server does, what the host did, and
-     what a person still has to do. If there is no such tool yet, which TP2 tool is first. -->
+
+No Week 9 tool changes anything: `search_flights` and `search_airports` only read
+search results. Nothing is booked, purchased, sent, or saved for later, so there is
+no pending request to record yet. The cost of each search is the one real-world
+effect. Invalid requests are rejected before any upstream call, and in the agent
+loop the step cap limits how many tool calls a run can make; the $0.05 cap covers
+model tokens only, and a cap on billed searches is still open in `spec.md`.
+
+None of the tools planned for Team Project 2 has a side effect either; the spec
+excludes booking and payment. The first tool that would need the gate is a
+price-watch alert, currently deferred in `spec.md` section 1. If the team adds it,
+the server would only append a pending alert request (route, dates, target price,
+contact) to a local file and return `pending: true`; it would never send a message
+or subscribe anyone on the model's say-so. The host's permission prompt is a second
+check, and a person would review the pending file and decide whether to enable the
+alert.
