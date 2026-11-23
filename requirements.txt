@@ -2,3 +2,5 @@ mcp>=2,<3
 httpx
 pydantic
 pytest
+airportsdata==20260905
+tzdata

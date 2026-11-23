@@ -37,11 +37,12 @@ async def test_application_supports_protocol_discovery(app):
     async with Client(app.mcp) as client:
         listed = await client.list_tools()
     assert isinstance(listed.tools, list)
-    # Every registered tool must be one of the five from spec.md section 3.
-    # Subset check: registered tools can be fewer than the full set while
-    # tools are still being implemented.
-    listed_names = {tool.name for tool in listed.tools}
-    assert listed_names.issubset(EXPECTED_TOOLS), listed_names
+    # Every registered tool must be one of the five from spec.md section 3, and
+    # no tool is registered twice. Subset check: registered tools can be fewer
+    # than the full set while tools are still being implemented.
+    names = [tool.name for tool in listed.tools]
+    assert len(names) == len(set(names)), names
+    assert set(names).issubset(EXPECTED_TOOLS), names
 
 
 def test_default_startup_uses_stdio(app, monkeypatch, capsys):
