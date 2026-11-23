@@ -1,5 +1,6 @@
 mcp>=2,<3
-pytest
 httpx
+pydantic
+pytest
 airportsdata==20260905
 tzdata
