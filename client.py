@@ -31,11 +31,11 @@ async def main():
 
         print("\n--- search_flights, valid one-way request")
         result = await client.call_tool("search_flights", request)
-        print("is_error:", result.is_error, "|", result.content[0].text[:300])
+        print("is_error:", result.is_error, "|", result.content[0].text)
 
         print("\n--- search_flights with adults=10 (the schema says 1 to 9)")
         result = await client.call_tool("search_flights", {**request, "adults": 10})
-        print("is_error:", result.is_error, "|", result.content[0].text[:200])
+        print("is_error:", result.is_error, "|", result.content[0].text)
 
 
 if __name__ == "__main__":
