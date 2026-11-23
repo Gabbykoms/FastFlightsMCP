@@ -9,6 +9,7 @@ These tests pin the contract before the implementation:
 
 No model, no network, no subprocess, no Redis, no real key.
 """
+import httpx
 import pytest
 from mcp import Client
 
@@ -125,3 +126,20 @@ async def test_upstream_failure_hides_the_api_key(monkeypatch, fake_cache):
     assert "test-secret" not in rendered
     # The model needs something actionable to do next.
     assert rendered.strip()
+
+
+def test_location_search_sends_the_key_in_a_header_not_the_url(monkeypatch):
+    """httpx logs full request URLs at INFO and puts them in HTTPStatusError text, so a key
+    in the query string would reach stderr and exception messages."""
+    seen = {}
+
+    def fake_get(url, **kwargs):
+        seen.update(url=url, **kwargs)
+        return httpx.Response(200, json={"locations": []}, request=httpx.Request("GET", url))
+
+    monkeypatch.setattr(search_airports.httpx, "get", fake_get)
+    monkeypatch.setenv("SEARCHAPI_API_KEY", "synthetic-key-do-not-leak")
+    search_airports._location_search("Paris")
+    assert "api_key" not in seen["params"]
+    assert "synthetic-key-do-not-leak" not in str(seen["url"]) + str(seen["params"])
+    assert seen["headers"]["Authorization"] == "Bearer synthetic-key-do-not-leak"

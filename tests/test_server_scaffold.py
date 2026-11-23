@@ -1,9 +1,11 @@
 """Offline checks for the shared application and its startup boundary."""
 import importlib
+import logging
 import runpy
 from pathlib import Path
 from unittest.mock import Mock
 
+import httpx
 import pytest
 from mcp import Client
 
@@ -58,6 +60,29 @@ def test_http_startup_uses_loopback(app, monkeypatch):
     monkeypatch.setattr(app.mcp, "run", run)
     app.main(["--http"])
     run.assert_called_once_with(transport="streamable-http", host="127.0.0.1", port=8000)
+
+
+@pytest.fixture
+def production_log_levels():
+    """Root at INFO, as main() configures it, and no override on the httpx logger."""
+    root, httpx_logger = logging.getLogger(), logging.getLogger("httpx")
+    before = root.level, httpx_logger.level
+    root.setLevel(logging.INFO)
+    httpx_logger.setLevel(logging.NOTSET)
+    yield
+    root.setLevel(before[0])
+    httpx_logger.setLevel(before[1])
+
+
+def test_startup_keeps_request_urls_out_of_the_logs(app, monkeypatch, caplog, production_log_levels):
+    """httpx logs every request URL, query string included, at INFO. A URL can carry a
+    credential, so startup must stop that line from being written."""
+    monkeypatch.setattr(app.mcp, "run", Mock())
+    app.main([])
+    transport = httpx.MockTransport(lambda request: httpx.Response(200))
+    with httpx.Client(transport=transport) as client:
+        client.get("https://example.test/search", params={"token": "synthetic-do-not-log"})
+    assert "synthetic-do-not-log" not in caplog.text
 
 
 def test_root_launcher_delegates_to_package(app, monkeypatch):
