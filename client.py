@@ -6,8 +6,9 @@ This is everything an MCP host does before a model is involved: launch the serve
 process, discover its tools and their schemas, and call one by name with JSON arguments.
 Claude Code does the same thing, then hands the schemas to the model.
 
-No API key and no network are needed. Until the SearchApi adapter exists, the valid call
-below ends in the placeholder's UPSTREAM_UNAVAILABLE error; that is expected.
+Without SEARCHAPI_API_KEY in the environment, the valid call below ends in a
+CONFIGURATION_ERROR and no network request is made. With the key set, that call is a real,
+billed SearchApi request (one request for a one-way search).
 """
 import asyncio
 import json

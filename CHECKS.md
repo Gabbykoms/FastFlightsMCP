@@ -91,6 +91,32 @@
   `~/Desktop` is an unverified guess). The root `server.py` now puts `src/` on
   `sys.path` and pytest sets `pythonpath = ["src"]`. Revisit the cause if it matters.
 
+### `search_flights`: SearchApi adapter (2026-11-23)
+
+- Branch: `feat/search-flights-adapter-impl`, from `main` after PR #16 merged the failing tests
+  (85 adapter cases in `tests/test_provider.py`, 4 children/infants cases in
+  `tests/test_search_flights.py`). Implementation: `src/fastflights_mcp/provider.py`;
+  `server.fetch_flight_candidates` delegates to it.
+- Command: `python3 -m pytest tests -q`. Actual result: **147 passed** (57 existing, 4
+  rejection, 86 adapter: the 85 from PR #16 plus one added here, see below). Before the
+  implementation the same suite was 57 passed, 4 failed, 85 errors.
+- All adapter tests use an `httpx.MockTransport` serving the sanitized recordings in
+  `tests/fixtures/searchapi/`; no network and no key. Padded outbound lists, mutated options,
+  shifted dates and the empty-result and error-key responses are synthetic.
+- Mutation check: the adapter was deliberately broken in 8 ways (no party-total split, wrong
+  time zone, key in the URL, client errors retried, no request cap, unusable data returned as
+  an empty success, no timeout, no chronology check on the return leg). The tests caught 7.
+  The eighth, the return-leg chronology check, had no adapter-level test, so
+  `test_a_return_that_departs_before_the_outbound_lands_is_not_a_round_trip` was added;
+  the break is now caught by exactly that test.
+- Real stdio check: `env -u SEARCHAPI_API_KEY python3 client.py` exits 0. The valid
+  call returns `CONFIGURATION_ERROR` with no network request, and `adults=10` is rejected by the
+  schema. The tool description now says children and infants are not supported.
+- **Not verified:** no live SearchApi request was made through the adapter. Real responses
+  are covered only by the recordings (one route, one date). Children and infants are
+  rejected (stopgap) because the provider returns a party total; SearchApi's real "no
+  flights" response is unrecorded; no Claude Code check yet.
+
 ### Tools
 | Tool | Tests | What happened when Claude Code called it |
 |---|---|---|
