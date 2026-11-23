@@ -91,15 +91,61 @@
   `~/Desktop` is an unverified guess). The root `server.py` now puts `src/` on
   `sys.path` and pytest sets `pythonpath = ["src"]`. Revisit the cause if it matters.
 
+### `search_flights`: SearchApi adapter (2026-11-23)
+
+- Branch: `feat/search-flights-adapter-impl`, from `main` after PR #16 merged the failing tests
+  (85 adapter cases in `tests/test_provider.py`, 4 children/infants cases in
+  `tests/test_search_flights.py`). Implementation: `src/fastflights_mcp/provider.py`;
+  `server.fetch_flight_candidates` delegates to it.
+- Command: `python3 -m pytest tests -q`. Actual result: **147 passed** (57 existing, 4
+  rejection, 86 adapter: the 85 from PR #16 plus one added here, see below). Before the
+  implementation the same suite was 57 passed, 4 failed, 85 errors.
+- All adapter tests use an `httpx.MockTransport` serving the sanitized recordings in
+  `tests/fixtures/searchapi/`; no network and no key. Padded outbound lists, mutated options,
+  shifted dates and the empty-result and error-key responses are synthetic.
+- Mutation check: the adapter was deliberately broken in 8 ways (no party-total split, wrong
+  time zone, key in the URL, client errors retried, no request cap, unusable data returned as
+  an empty success, no timeout, no chronology check on the return leg). The tests caught 7.
+  The eighth, the return-leg chronology check, had no adapter-level test, so
+  `test_a_return_that_departs_before_the_outbound_lands_is_not_a_round_trip` was added;
+  the break is now caught by exactly that test.
+- Real stdio check: `env -u SEARCHAPI_API_KEY python3 client.py` exits 0. The valid
+  call returns `CONFIGURATION_ERROR` with no network request, and `adults=10` is rejected by the
+  schema. The tool description now says children and infants are not supported.
+- Live check (Gabriel approved one request): `client.py` with the key forwarded made one real
+  one-way search, JFK to LIS on 2027-01-22, economy, 1 adult, USD. The server log shows one
+  `GET https://www.searchapi.io/api/v1/search?... "HTTP/1.1 200 OK"`. The tool returned 5
+  itineraries with no error and no message; the recommended one is the nonstop TP 210 at
+  404 USD, 2027-01-22T22:00:00-05:00 to 2027-01-23T10:05:00+00:00, 425 minutes. The others:
+  DL 272 (527 USD, nonstop), AT 201 + AT 980 (521 USD, 1 stop), IB 212 + IB 529 (535 USD,
+  1 stop) and FI 614 + FI 954 (502 USD, 1 stop, 2185 minutes, ranked last). The key value
+  is absent from stdout and stderr. Cost at most $0.004.
+- Finding: the MCP SDK's stdio client passes the server it launches only HOME, LOGNAME,
+  PATH, SHELL, TERM and USER. `client.py` therefore reported `CONFIGURATION_ERROR` even with
+  the key exported, until it was changed to forward `SEARCHAPI_API_KEY` explicitly.
+  `plan.md` says the server inherits the key from the launching shell; that holds for
+  nothing verified yet, and Claude Code's handling of `.mcp.json` environment variables
+  must be checked in the registration step.
+- **Not verified:** round trips, multiple airports and the error paths against the live
+  provider (only a one-way search ran live); SearchApi's real "no flights" response is
+  unrecorded; children and infants are rejected (stopgap) because the provider returns a
+  party total; no Claude Code check yet.
+
 ### Tools
 | Tool | Tests | What happened when Claude Code called it |
 |---|---|---|
 | | | |
 
 ### Output of `client.py`
-Command: `python3 client.py` (real stdio subprocess, no model, no key, no network).
-Exit 0; stdout shown, server logs went to stderr. The valid call ends in the
-placeholder adapter's error, which is expected until the real adapter exists.
+Command: `SEARCHAPI_API_KEY=<set, not shown> python3 client.py`, run on 2026-11-23 at about
+15:51 UTC. It starts `server.py` as a real stdio subprocess; no model is involved. The key is
+forwarded to the server explicitly (see the adapter entry above). Exit 0. The first call is a
+**real, billed SearchApi request** (one one-way search, JFK to LIS on 2027-01-22); the second
+call (`adults=10`) is rejected by the schema before any request. The server's own logs went
+to stderr and stdout stayed clean. stderr held two lines: the `HTTP/1.1 200 OK` for the search,
+and the rejected `adults` argument. The key value appears in neither. Earlier
+versions of this block (placeholder adapter, then the key-unset `CONFIGURATION_ERROR` run) are
+in git history.
 ```text
 
 search_flights: Find complete one-way or round-trip flights once locations, dates and cabin are known.
@@ -108,11 +154,240 @@ Call this after city names are resolved to IATA airport codes (use search_airpor
 Omit return_date for one-way. Returns up to five itineraries and one recommendation.
 An empty result is a normal answer; ask the traveler before changing the budget,
 dates or airports. Prices and budgets are per person for the whole itinerary.
+Children and infants are not supported yet: the party must be adults only.
 
   schema: {"origin": {"description": "Distinct uppercase IATA airport codes, 1 to 10.", "items": {"pattern": "^[A-Z]{3}$", "type": "string"}, "maxItems": 10, "minItems": 1, "title": "Origin", "type": "array"}, "destination": {"description": "Distinct uppercase IATA airport codes, 1 to 10.", "items": {"pattern": "^[A-Z]{3}$", "type": "string"}, "maxItems": 10, "minItems": 1, "title": "Destination", "type": "array"}, "depart_date": {"pattern": "^\\d{4}-\\d{2}-\\d{2}$", "title": "Depart Date", "type": "string"}, "cabin": {"enum": ["economy", "premium_economy", "business", "first"], "title": "Cabin", "type": "string"}, "return_date": {"anyOf": [{"pattern": "^\\d{4}-\\d{2}-\\d{2}$", "type": "string"}, {"type": "null"}], "default": null, "title": "Return Date"}, "adults": {"default": 1, "maximum": 9, "minimum": 1, "title": "Adults", "type": "integer"}, "children": {"default": 0, "maximum": 8, "minimum": 0, "title": "Children", "type": "integer"}, "infants_in_seat": {"default": 0, "maximum": 8, "minimum": 0, "title": "Infants In Seat", "type": "integer"}, "infants_on_lap": {"default": 0, "maximum": 8, "minimum": 0, "title": "Infants On Lap", "type": "integer"}, "currency": {"default": "USD", "pattern": "^[A-Z]{3}$", "title": "Currency", "type": "string"}, "budget": {"anyOf": [{"exclusiveMinimum": 0, "type": "number"}, {"type": "null"}], "default": null, "description": "Per person, whole trip.", "title": "Budget"}, "strict_budget": {"default": false, "title": "Strict Budget", "type": "boolean"}, "max_stops": {"anyOf": [{"maximum": 2, "minimum": 0, "type": "integer"}, {"type": "null"}], "default": null, "description": "Per requested leg.", "title": "Max Stops"}}
 
 --- search_flights, valid one-way request
-is_error: True | Error executing tool search_flights: UPSTREAM_UNAVAILABLE: The SearchApi adapter is not implemented in this build.
+is_error: False | {
+  "query": {
+    "origin": [
+      "JFK"
+    ],
+    "destination": [
+      "LIS"
+    ],
+    "depart_date": "2027-01-22",
+    "return_date": null,
+    "cabin": "economy",
+    "adults": 1,
+    "children": 0,
+    "infants_in_seat": 0,
+    "infants_on_lap": 0,
+    "currency": "USD",
+    "budget": null,
+    "strict_budget": false,
+    "max_stops": null
+  },
+  "fetched_at": "2026-11-23T15:51:03.715438Z",
+  "cache_hit": false,
+  "message": null,
+  "results": [
+    {
+      "id": "fl_a1f57c7e9d85fbf8",
+      "legs": [
+        {
+          "origin": "JFK",
+          "destination": "LIS",
+          "departure": "2027-01-22T22:00:00-05:00",
+          "arrival": "2027-01-23T10:05:00+00:00",
+          "duration_minutes": 425,
+          "stops": 0,
+          "segments": [
+            {
+              "airline": "Tap Air Portugal",
+              "flight_number": "TP 210",
+              "origin": "JFK",
+              "destination": "LIS",
+              "departure": "2027-01-22T22:00:00-05:00",
+              "arrival": "2027-01-23T10:05:00+00:00",
+              "duration_minutes": 425
+            }
+          ],
+          "google_flights_url": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI3LTAxLTIyagcIARIDSkZLcgcIARIDTElTQAFIAXABggELCP___________wGYAQI&hl=en&gl=us&curr=USD"
+        }
+      ],
+      "price_per_person": 404.0,
+      "currency": "USD",
+      "total_travel_minutes": 425,
+      "total_stops": 0,
+      "google_flights_url": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI3LTAxLTIyagcIARIDSkZLcgcIARIDTElTQAFIAXABggELCP___________wGYAQI&hl=en&gl=us&curr=USD",
+      "separate_tickets": null,
+      "budget_status": "not_specified",
+      "budget_overage": null,
+      "recommendation_reasons": [
+        "Nonstop",
+        "Total travel time 7h 05m",
+        "404 USD per person"
+      ]
+    },
+    {
+      "id": "fl_186da4b8831551ab",
+      "legs": [
+        {
+          "origin": "JFK",
+          "destination": "LIS",
+          "departure": "2027-01-22T20:20:00-05:00",
+          "arrival": "2027-01-23T08:00:00+00:00",
+          "duration_minutes": 400,
+          "stops": 0,
+          "segments": [
+            {
+              "airline": "Delta",
+              "flight_number": "DL 272",
+              "origin": "JFK",
+              "destination": "LIS",
+              "departure": "2027-01-22T20:20:00-05:00",
+              "arrival": "2027-01-23T08:00:00+00:00",
+              "duration_minutes": 400
+            }
+          ],
+          "google_flights_url": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI3LTAxLTIyagcIARIDSkZLcgcIARIDTElTQAFIAXABggELCP___________wGYAQI&hl=en&gl=us&curr=USD"
+        }
+      ],
+      "price_per_person": 527.0,
+      "currency": "USD",
+      "total_travel_minutes": 400,
+      "total_stops": 0,
+      "google_flights_url": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI3LTAxLTIyagcIARIDSkZLcgcIARIDTElTQAFIAXABggELCP___________wGYAQI&hl=en&gl=us&curr=USD",
+      "separate_tickets": null,
+      "budget_status": "not_specified",
+      "budget_overage": null,
+      "recommendation_reasons": []
+    },
+    {
+      "id": "fl_c8d474ac2d514a0d",
+      "legs": [
+        {
+          "origin": "JFK",
+          "destination": "LIS",
+          "departure": "2027-01-22T20:00:00-05:00",
+          "arrival": "2027-01-23T11:35:00+00:00",
+          "duration_minutes": 635,
+          "stops": 1,
+          "segments": [
+            {
+              "airline": "Royal Air Maroc",
+              "flight_number": "AT 201",
+              "origin": "JFK",
+              "destination": "CMN",
+              "departure": "2027-01-22T20:00:00-05:00",
+              "arrival": "2027-01-23T07:50:00+00:00",
+              "duration_minutes": 410
+            },
+            {
+              "airline": "Royal Air Maroc",
+              "flight_number": "AT 980",
+              "origin": "CMN",
+              "destination": "LIS",
+              "departure": "2027-01-23T10:05:00+00:00",
+              "arrival": "2027-01-23T11:35:00+00:00",
+              "duration_minutes": 90
+            }
+          ],
+          "google_flights_url": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI3LTAxLTIyagcIARIDSkZLcgcIARIDTElTQAFIAXABggELCP___________wGYAQI&hl=en&gl=us&curr=USD"
+        }
+      ],
+      "price_per_person": 521.0,
+      "currency": "USD",
+      "total_travel_minutes": 635,
+      "total_stops": 1,
+      "google_flights_url": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI3LTAxLTIyagcIARIDSkZLcgcIARIDTElTQAFIAXABggELCP___________wGYAQI&hl=en&gl=us&curr=USD",
+      "separate_tickets": null,
+      "budget_status": "not_specified",
+      "budget_overage": null,
+      "recommendation_reasons": []
+    },
+    {
+      "id": "fl_c1bdcd09712246e8",
+      "legs": [
+        {
+          "origin": "JFK",
+          "destination": "LIS",
+          "departure": "2027-01-22T17:05:00-05:00",
+          "arrival": "2027-01-23T07:40:00+00:00",
+          "duration_minutes": 575,
+          "stops": 1,
+          "segments": [
+            {
+              "airline": "Iberia",
+              "flight_number": "IB 212",
+              "origin": "JFK",
+              "destination": "MAD",
+              "departure": "2027-01-22T17:05:00-05:00",
+              "arrival": "2027-01-23T06:20:00+01:00",
+              "duration_minutes": 435
+            },
+            {
+              "airline": "Iberia",
+              "flight_number": "IB 529",
+              "origin": "MAD",
+              "destination": "LIS",
+              "departure": "2027-01-23T07:15:00+01:00",
+              "arrival": "2027-01-23T07:40:00+00:00",
+              "duration_minutes": 85
+            }
+          ],
+          "google_flights_url": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI3LTAxLTIyagcIARIDSkZLcgcIARIDTElTQAFIAXABggELCP___________wGYAQI&hl=en&gl=us&curr=USD"
+        }
+      ],
+      "price_per_person": 535.0,
+      "currency": "USD",
+      "total_travel_minutes": 575,
+      "total_stops": 1,
+      "google_flights_url": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI3LTAxLTIyagcIARIDSkZLcgcIARIDTElTQAFIAXABggELCP___________wGYAQI&hl=en&gl=us&curr=USD",
+      "separate_tickets": null,
+      "budget_status": "not_specified",
+      "budget_overage": null,
+      "recommendation_reasons": []
+    },
+    {
+      "id": "fl_381c405d9ed66732",
+      "legs": [
+        {
+          "origin": "JFK",
+          "destination": "LIS",
+          "departure": "2027-01-22T19:25:00-05:00",
+          "arrival": "2027-01-24T12:50:00+00:00",
+          "duration_minutes": 2185,
+          "stops": 1,
+          "segments": [
+            {
+              "airline": "Icelandair",
+              "flight_number": "FI 614",
+              "origin": "JFK",
+              "destination": "KEF",
+              "departure": "2027-01-22T19:25:00-05:00",
+              "arrival": "2027-01-23T06:10:00+00:00",
+              "duration_minutes": 345
+            },
+            {
+              "airline": "Icelandair",
+              "flight_number": "FI 954",
+              "origin": "KEF",
+              "destination": "LIS",
+              "departure": "2027-01-24T08:30:00+00:00",
+              "arrival": "2027-01-24T12:50:00+00:00",
+              "duration_minutes": 260
+            }
+          ],
+          "google_flights_url": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI3LTAxLTIyagcIARIDSkZLcgcIARIDTElTQAFIAXABggELCP___________wGYAQI&hl=en&gl=us&curr=USD"
+        }
+      ],
+      "price_per_person": 502.0,
+      "currency": "USD",
+      "total_travel_minutes": 2185,
+      "total_stops": 1,
+      "google_flights_url": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI3LTAxLTIyagcIARIDSkZLcgcIARIDTElTQAFIAXABggELCP___________wGYAQI&hl=en&gl=us&curr=USD",
+      "separate_tickets": null,
+      "budget_status": "not_specified",
+      "budget_overage": null,
+      "recommendation_reasons": []
+    }
+  ],
+  "recommended_id": "fl_a1f57c7e9d85fbf8",
+  "within_budget_found": null
+}
 
 --- search_flights with adults=10 (the schema says 1 to 9)
 is_error: True | Error executing tool search_flights: 1 validation error for search_flightsArguments

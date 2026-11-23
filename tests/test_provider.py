@@ -38,7 +38,7 @@ import importlib
 import json
 import logging
 import socket
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 import httpx
@@ -372,6 +372,22 @@ async def test_outbounds_without_return_options_yield_no_candidates(provider, ap
 async def test_a_follow_up_that_does_not_return_home_is_not_a_round_trip(provider, api, round_trip_query):
     outbound = load("round_trip_outbound")
     api.respond = lambda request: ok(outbound)  # follow-ups also answer with outbound-only flights
+    with pytest.raises(ToolError, match="UPSTREAM_DATA_ERROR"):
+        await provider.fetch_flight_candidates(**round_trip_query)
+
+
+async def test_a_return_that_departs_before_the_outbound_lands_is_not_a_round_trip(
+        provider, api, round_trip_query):
+    """Synthetic: the real return response with every date moved 8 days earlier, so the
+    return flights leave before the outbound (2027-01-22) arrives."""
+    returns = load("round_trip_return")
+    for option in options(returns):
+        for flight in option["flights"]:
+            for point in (flight["departure_airport"], flight["arrival_airport"]):
+                point["date"] = (date.fromisoformat(point["date"]) - timedelta(days=8)).isoformat()
+    original = fixture_respond
+    api.respond = lambda request: (ok(returns) if "departure_token" in request.url.params
+                                   else original(request))
     with pytest.raises(ToolError, match="UPSTREAM_DATA_ERROR"):
         await provider.fetch_flight_candidates(**round_trip_query)
 
