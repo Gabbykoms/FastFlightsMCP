@@ -1,3 +1,5 @@
 mcp>=2,<3
 pytest
 httpx
+airportsdata==20260905
+tzdata

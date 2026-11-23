@@ -460,6 +460,8 @@ timeout and bounded retries; exact values remain an implementation-plan decision
 | `mcp` | Official MCP server and protocol interfaces required by the lab; course example reports 2.3.0; verify and pin the working version during implementation. |
 | `pytest` | Offline protocol tests covering schemas, validation, empty results, and simulated upstream failures. |
 | `httpx` | HTTP client for SearchApi with async requests and explicit timeouts; preferred over stdlib `urllib` for integration with the async server. |
+| `airportsdata` (pinned `==20260905`) | Maps an IATA airport code to its IANA timezone. SearchApi returns local clock times with no UTC offset, so the adapter needs it to attach offsets and compute real elapsed times. Approved by Gabriel; an older release is pinned because the newest needs Python 3.12 and this project supports 3.11. A code missing from the table makes the itinerary unusable; offsets are never guessed. Checked against the recorded fixtures: all 23 segments' computed durations match the provider's. |
+| `tzdata` | Timezone database for `zoneinfo`, so offsets are identical on systems without an operating-system copy (Windows, slim containers, hosted deployment). Approved by Gabriel. |
 | `pydantic` | Typed request/result validation and schema field constraints; explicit dependency because project code uses it directly. |
 | Redis client (conditional on backend decision) | Install only if Redis is selected for final-release shared caching. In-memory cache is the alternative; neither Redis nor a cache service is required for Week 9 or offline CI. |
 | OpenRouter SDK (package/version pending) | Agent-loop intent requires non-streaming model calls through OpenRouter. |
