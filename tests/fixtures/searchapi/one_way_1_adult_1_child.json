@@ -1,0 +1,829 @@
+{
+  "search_metadata": {
+    "id": "search_REDACTED",
+    "status": "Success",
+    "created_at": "2026-11-23T15:25:54Z",
+    "request_time_taken": 1.3,
+    "parsing_time_taken": 0.09,
+    "total_time_taken": 1.39,
+    "request_url": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI3LTAxLTIxagcIARIDSkZLcgcIARIDTElTQAFAAkgBcAGCAQsI____________AZgBAg&hl=en&gl=us&curr=USD",
+    "html_url": "https://www.searchapi.io/api/v1/searches/search_REDACTED.html",
+    "json_url": "https://www.searchapi.io/api/v1/searches/search_REDACTED"
+  },
+  "search_parameters": {
+    "engine": "google_flights",
+    "departure_id": "JFK",
+    "arrival_id": "LIS",
+    "currency": "USD",
+    "hl": "en",
+    "gl": "us",
+    "outbound_date": "2027-01-21",
+    "flight_type": "one_way",
+    "travel_class": "economy",
+    "stops": "any",
+    "adults": "1",
+    "children": "1",
+    "infants_in_seat": "0",
+    "infants_on_lap": "0"
+  },
+  "best_flights": [
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "John F. Kennedy International Airport",
+            "id": "JFK",
+            "date": "2027-01-21",
+            "time": "22:00"
+          },
+          "arrival_airport": {
+            "name": "Lisbon Airport",
+            "id": "LIS",
+            "date": "2027-01-22",
+            "time": "10:00"
+          },
+          "duration": 420,
+          "airplane": "Airbus A321neo",
+          "airline": "Tap Air Portugal",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/TP.png",
+          "travel_class": "Economy",
+          "flight_number": "TP 210",
+          "ticket_also_sold_by": [
+            "JetBlue"
+          ],
+          "is_overnight": true,
+          "extensions": [
+            "Power and USB outlets",
+            "On-demand video",
+            "Wi-Fi for fee",
+            "Seat type Average Legroom",
+            "Legroom 31 inches",
+            "Carbon emission: 921 kg"
+          ],
+          "detected_extensions": {
+            "has_power_and_usb_outlets": true,
+            "has_on_demand_video": true,
+            "wifi": "for fee",
+            "seat_type": "Average Legroom",
+            "legroom_short": "31 in",
+            "legroom_long": "31 inches",
+            "carbon_emission": 921
+          }
+        }
+      ],
+      "total_duration": 420,
+      "carbon_emissions": {
+        "this_flight": 921000,
+        "typical_for_this_route": 960000,
+        "difference_percent": -4,
+        "lowest_route": 921000
+      },
+      "price": 807,
+      "type": "One way",
+      "extensions": [
+        "Carry-on bag included"
+      ],
+      "baggage": {
+        "carry_on_bag": "included",
+        "carry_on_bags_included": 2
+      },
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/TP.png",
+      "booking_token": "WyJDalJJYURJMlVWRXphbFpaZVdOQlZVNXFOMUZDUnkwdExTMHRMUzB0TFMxMmQyOXJNVUZCUVVGQlIzTkZWM2ROUlZCbFdUaEJFZ1ZVVURJeE1Cb0xDTHoyQkJBQ0dnTlZVMFE0SFhDODlnUT0iLFtbIkpGSyIsIjIwMjctMDEtMjEiLCJMSVMiLG51bGwsIlRQIiwiMjEwIl1dXQ=="
+    },
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "John F. Kennedy International Airport",
+            "id": "JFK",
+            "date": "2027-01-21",
+            "time": "20:20"
+          },
+          "arrival_airport": {
+            "name": "Lisbon Airport",
+            "id": "LIS",
+            "date": "2027-01-22",
+            "time": "08:00"
+          },
+          "duration": 400,
+          "airplane": "Boeing 767",
+          "airline": "Delta",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/DL.png",
+          "travel_class": "Economy",
+          "flight_number": "DL 272",
+          "ticket_also_sold_by": [
+            "KLM",
+            "Virgin Atlantic"
+          ],
+          "is_overnight": true,
+          "extensions": [
+            "Power and USB outlets",
+            "On-demand video",
+            "Wi-Fi free",
+            "Seat type Average Legroom",
+            "Legroom 31 inches",
+            "Carbon emission: 680 kg"
+          ],
+          "detected_extensions": {
+            "has_power_and_usb_outlets": true,
+            "has_on_demand_video": true,
+            "wifi": "free",
+            "seat_type": "Average Legroom",
+            "legroom_short": "31 in",
+            "legroom_long": "31 inches",
+            "carbon_emission": 680
+          }
+        }
+      ],
+      "total_duration": 400,
+      "carbon_emissions": {
+        "this_flight": 681000,
+        "typical_for_this_route": 960000,
+        "difference_percent": -29,
+        "lowest_route": 921000
+      },
+      "price": 1053,
+      "type": "One way",
+      "extensions": [
+        "Carry-on bag included"
+      ],
+      "baggage": {
+        "carry_on_bag": "included",
+        "carry_on_bags_included": 2
+      },
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/DL.png",
+      "booking_token": "WyJDalJJYURJMlVWRXphbFpaZVdOQlZVNXFOMUZDUnkwdExTMHRMUzB0TFMxMmQyOXJNVUZCUVVGQlIzTkZWM2ROUlZCbFdUaEJFZ1ZFVERJM01ob0xDTlMyQmhBQ0dnTlZVMFE0SFhEVXRnWT0iLFtbIkpGSyIsIjIwMjctMDEtMjEiLCJMSVMiLG51bGwsIkRMIiwiMjcyIl1dXQ=="
+    }
+  ],
+  "other_flights": [
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "John F. Kennedy International Airport",
+            "id": "JFK",
+            "date": "2027-01-21",
+            "time": "17:00"
+          },
+          "arrival_airport": {
+            "name": "Dublin Airport",
+            "id": "DUB",
+            "date": "2027-01-22",
+            "time": "04:30"
+          },
+          "duration": 390,
+          "airplane": "Airbus A330",
+          "airline": "Aer Lingus",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/EI.png",
+          "travel_class": "Economy",
+          "flight_number": "EI 104",
+          "is_overnight": true,
+          "extensions": [
+            "Power and USB outlets",
+            "On-demand video",
+            "Seat type Average Legroom",
+            "Legroom 31 inches",
+            "Carbon emission: 680 kg"
+          ],
+          "detected_extensions": {
+            "has_power_and_usb_outlets": true,
+            "has_on_demand_video": true,
+            "seat_type": "Average Legroom",
+            "legroom_short": "31 in",
+            "legroom_long": "31 inches",
+            "carbon_emission": 680
+          }
+        },
+        {
+          "departure_airport": {
+            "name": "Dublin Airport",
+            "id": "DUB",
+            "date": "2027-01-22",
+            "time": "07:10"
+          },
+          "arrival_airport": {
+            "name": "Lisbon Airport",
+            "id": "LIS",
+            "date": "2027-01-22",
+            "time": "10:10"
+          },
+          "duration": 180,
+          "airplane": "Airbus A320",
+          "airline": "Aer Lingus",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/EI.png",
+          "travel_class": "Economy",
+          "flight_number": "EI 482",
+          "extensions": [
+            "Seat type Average Legroom",
+            "Legroom 30 inches",
+            "Carbon emission: 299 kg"
+          ],
+          "detected_extensions": {
+            "seat_type": "Average Legroom",
+            "legroom_short": "30 in",
+            "legroom_long": "30 inches",
+            "carbon_emission": 299
+          }
+        }
+      ],
+      "layovers": [
+        {
+          "duration": 160,
+          "name": "Dublin Airport",
+          "id": "DUB"
+        }
+      ],
+      "total_duration": 730,
+      "carbon_emissions": {
+        "this_flight": 979000,
+        "typical_for_this_route": 960000,
+        "difference_percent": 2,
+        "lowest_route": 921000
+      },
+      "price": 872,
+      "type": "One way",
+      "extensions": [
+        "Carry-on bag included"
+      ],
+      "baggage": {
+        "carry_on_bag": "included",
+        "carry_on_bags_included": 2
+      },
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/EI.png",
+      "booking_token": "WyJDalJJYURJMlVWRXphbFpaZVdOQlZVNXFOMUZDUnkwdExTMHRMUzB0TFMxMmQyOXJNVUZCUVVGQlIzTkZWM2ROUlZCbFdUaEJFZ3RGU1RFd05IeEZTVFE0TWhvTENQS29CUkFDR2dOVlUwUTRIWER5cUFVPSIsW1siSkZLIiwiMjAyNy0wMS0yMSIsIkRVQiIsbnVsbCwiRUkiLCIxMDQiXSxbIkRVQiIsIjIwMjctMDEtMjIiLCJMSVMiLG51bGwsIkVJIiwiNDgyIl1dXQ=="
+    },
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "John F. Kennedy International Airport",
+            "id": "JFK",
+            "date": "2027-01-21",
+            "time": "20:00"
+          },
+          "arrival_airport": {
+            "name": "Casablanca Mohammed V International Airport",
+            "id": "CMN",
+            "date": "2027-01-22",
+            "time": "07:50"
+          },
+          "duration": 410,
+          "airplane": "Boeing 787",
+          "airline": "Royal Air Maroc",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AT.png",
+          "travel_class": "Economy",
+          "flight_number": "AT 201",
+          "is_overnight": true,
+          "extensions": [
+            "Power and USB outlets",
+            "On-demand video",
+            "Seat type Average Legroom",
+            "Legroom 31 inches",
+            "Carbon emission: 722 kg"
+          ],
+          "detected_extensions": {
+            "has_power_and_usb_outlets": true,
+            "has_on_demand_video": true,
+            "seat_type": "Average Legroom",
+            "legroom_short": "31 in",
+            "legroom_long": "31 inches",
+            "carbon_emission": 722
+          }
+        },
+        {
+          "departure_airport": {
+            "name": "Casablanca Mohammed V International Airport",
+            "id": "CMN",
+            "date": "2027-01-22",
+            "time": "10:05"
+          },
+          "arrival_airport": {
+            "name": "Lisbon Airport",
+            "id": "LIS",
+            "date": "2027-01-22",
+            "time": "11:35"
+          },
+          "duration": 90,
+          "airplane": "Boeing 737MAX 8 Passenger",
+          "airline": "Royal Air Maroc",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AT.png",
+          "travel_class": "Economy",
+          "flight_number": "AT 980",
+          "extensions": [
+            "Power and USB outlets",
+            "Seat type Above Average Legroom",
+            "Legroom 32 inches",
+            "Carbon emission: 142 kg"
+          ],
+          "detected_extensions": {
+            "has_power_and_usb_outlets": true,
+            "seat_type": "Above Average Legroom",
+            "legroom_short": "32 in",
+            "legroom_long": "32 inches",
+            "carbon_emission": 142
+          }
+        }
+      ],
+      "layovers": [
+        {
+          "duration": 135,
+          "name": "Casablanca Mohammed V International Airport",
+          "id": "CMN"
+        }
+      ],
+      "total_duration": 635,
+      "carbon_emissions": {
+        "this_flight": 865000,
+        "typical_for_this_route": 960000,
+        "difference_percent": -10,
+        "lowest_route": 921000
+      },
+      "price": 993,
+      "type": "One way",
+      "extensions": [
+        "Carry-on bag included"
+      ],
+      "baggage": {
+        "carry_on_bag": "included",
+        "carry_on_bags_included": 2
+      },
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AT.png",
+      "booking_token": "WyJDalJJYURJMlVWRXphbFpaZVdOQlZVNXFOMUZDUnkwdExTMHRMUzB0TFMxMmQyOXJNVUZCUVVGQlIzTkZWM2ROUlZCbFdUaEJFZ3RCVkRJd01YeEJWRGs0TUJvTENLaUhCaEFDR2dOVlUwUTRIWENvaHdZPSIsW1siSkZLIiwiMjAyNy0wMS0yMSIsIkNNTiIsbnVsbCwiQVQiLCIyMDEiXSxbIkNNTiIsIjIwMjctMDEtMjIiLCJMSVMiLG51bGwsIkFUIiwiOTgwIl1dXQ=="
+    },
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "John F. Kennedy International Airport",
+            "id": "JFK",
+            "date": "2027-01-21",
+            "time": "17:05"
+          },
+          "arrival_airport": {
+            "name": "Adolfo Suárez Madrid-Barajas Airport",
+            "id": "MAD",
+            "date": "2027-01-22",
+            "time": "06:20"
+          },
+          "duration": 435,
+          "airplane": "Airbus A321neo",
+          "airline": "Iberia",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/IB.png",
+          "travel_class": "Economy",
+          "flight_number": "IB 212",
+          "ticket_also_sold_by": [
+            "American",
+            "British Airways",
+            "Finnair"
+          ],
+          "is_overnight": true,
+          "extensions": [
+            "In-seat USB outlet",
+            "On-demand video",
+            "Seat type Average Legroom",
+            "Legroom 30 inches",
+            "Carbon emission: 874 kg"
+          ],
+          "detected_extensions": {
+            "has_in_seat_usb_outlet": true,
+            "has_on_demand_video": true,
+            "seat_type": "Average Legroom",
+            "legroom_short": "30 in",
+            "legroom_long": "30 inches",
+            "carbon_emission": 874
+          }
+        },
+        {
+          "departure_airport": {
+            "name": "Adolfo Suárez Madrid-Barajas Airport",
+            "id": "MAD",
+            "date": "2027-01-22",
+            "time": "07:15"
+          },
+          "arrival_airport": {
+            "name": "Lisbon Airport",
+            "id": "LIS",
+            "date": "2027-01-22",
+            "time": "07:40"
+          },
+          "duration": 85,
+          "airplane": "Airbus A320",
+          "airline": "Iberia",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/IB.png",
+          "travel_class": "Economy",
+          "flight_number": "IB 529",
+          "ticket_also_sold_by": [
+            "American"
+          ],
+          "extensions": [
+            "In-seat USB outlet",
+            "Wi-Fi for fee",
+            "Seat type Below Average Legroom",
+            "Legroom 28 inches",
+            "Carbon emission: 131 kg"
+          ],
+          "detected_extensions": {
+            "has_in_seat_usb_outlet": true,
+            "wifi": "for fee",
+            "seat_type": "Below Average Legroom",
+            "legroom_short": "28 in",
+            "legroom_long": "28 inches",
+            "carbon_emission": 131
+          }
+        }
+      ],
+      "layovers": [
+        {
+          "duration": 55,
+          "name": "Adolfo Suárez Madrid-Barajas Airport",
+          "id": "MAD"
+        }
+      ],
+      "total_duration": 575,
+      "carbon_emissions": {
+        "this_flight": 1007000,
+        "typical_for_this_route": 960000,
+        "difference_percent": 5,
+        "lowest_route": 921000
+      },
+      "price": 1069,
+      "type": "One way",
+      "extensions": [
+        "Carry-on bag included"
+      ],
+      "baggage": {
+        "carry_on_bag": "included",
+        "carry_on_bags_included": 2
+      },
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/IB.png",
+      "booking_token": "WyJDalJJYURJMlVWRXphbFpaZVdOQlZVNXFOMUZDUnkwdExTMHRMUzB0TFMxMmQyOXJNVUZCUVVGQlIzTkZWM2ROUlZCbFdUaEJFZ3RKUWpJeE1ueEpRalV5T1JvTENKVERCaEFDR2dOVlUwUTRIWENVd3dZPSIsW1siSkZLIiwiMjAyNy0wMS0yMSIsIk1BRCIsbnVsbCwiSUIiLCIyMTIiXSxbIk1BRCIsIjIwMjctMDEtMjIiLCJMSVMiLG51bGwsIklCIiwiNTI5Il1dXQ=="
+    }
+  ],
+  "price_insights": {
+    "lowest_price": 807,
+    "price_level": "typical",
+    "typical_price_range": {
+      "low_price": 480,
+      "high_price": 860
+    },
+    "cheapest_to_book": {
+      "estimated_savings": 80
+    }
+  },
+  "airports": [
+    {
+      "departure": [
+        {
+          "airport": {
+            "id": "JFK",
+            "name": "John F. Kennedy International Airport"
+          },
+          "city": "New York",
+          "country": "United States",
+          "country_code": "US",
+          "image": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcRa1dwH1NZQk4dsbPiyA9Vrq2RX75jXSZ-OkHn7NkLHl-11HercqDXoZ4p2cDxJkH6vca2degawrCzHEQ",
+          "thumbnail": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQEaUa9NsdPWGpAUGkTApkZDT_4M6_6V8wTcC0v1b1wJAJX-BuMSiipXbsoznGgcI1xLOc5QiTcR_xovexgjdOz0gqQe0tRQ9h0bUkZ07Q"
+        }
+      ],
+      "arrival": [
+        {
+          "airport": {
+            "id": "LIS",
+            "name": "Lisbon Airport"
+          },
+          "city": "Lisbon",
+          "country": "Portugal",
+          "country_code": "PT",
+          "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQLxT3PIh1TwnGsLrG7G-JQRFMG0zIp4uiQ71FTwf1WQHKROUG_veOYAiGQTLGO36g5OCdu9DUrwHrzaA",
+          "thumbnail": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSG3-nF1u-sTIpnrbZ3a_ly_OcwqDxS9MCOGoiQTX3dJ3ZoIiUsVHqxHC-nmruwZ8aoJZJPM7O5YSmsHR6tp2L_EHV4CnsiNtatHuedKBE"
+        }
+      ]
+    }
+  ],
+  "airlines": {
+    "alliances": [
+      {
+        "code": "ONEWORLD",
+        "name": "Oneworld"
+      },
+      {
+        "code": "SKYTEAM",
+        "name": "SkyTeam"
+      },
+      {
+        "code": "STAR_ALLIANCE",
+        "name": "Star Alliance"
+      }
+    ],
+    "airlines": [
+      {
+        "code": "EI",
+        "name": "Aer Lingus"
+      },
+      {
+        "code": "UX",
+        "name": "Air Europa"
+      },
+      {
+        "code": "AF",
+        "name": "Air France"
+      },
+      {
+        "code": "JU",
+        "name": "Air Serbia"
+      },
+      {
+        "code": "AS",
+        "name": "Alaska"
+      },
+      {
+        "code": "AA",
+        "name": "American"
+      },
+      {
+        "code": "OS",
+        "name": "Austrian"
+      },
+      {
+        "code": "S4",
+        "name": "Azores Airlines"
+      },
+      {
+        "code": "BA",
+        "name": "British Airways"
+      },
+      {
+        "code": "SN",
+        "name": "Brussels Airlines"
+      },
+      {
+        "code": "DE",
+        "name": "Condor"
+      },
+      {
+        "code": "DL",
+        "name": "Delta"
+      },
+      {
+        "code": "AY",
+        "name": "Finnair"
+      },
+      {
+        "code": "IB",
+        "name": "Iberia"
+      },
+      {
+        "code": "FI",
+        "name": "Icelandair"
+      },
+      {
+        "code": "6E",
+        "name": "IndiGo"
+      },
+      {
+        "code": "AZ",
+        "name": "ITA"
+      },
+      {
+        "code": "B6",
+        "name": "JetBlue"
+      },
+      {
+        "code": "KL",
+        "name": "KLM"
+      },
+      {
+        "code": "LO",
+        "name": "LOT"
+      },
+      {
+        "code": "LH",
+        "name": "Lufthansa"
+      },
+      {
+        "code": "QR",
+        "name": "Qatar Airways"
+      },
+      {
+        "code": "AT",
+        "name": "Royal Air Maroc"
+      },
+      {
+        "code": "SV",
+        "name": "Saudia"
+      },
+      {
+        "code": "SK",
+        "name": "Scandinavian Airlines"
+      },
+      {
+        "code": "SQ",
+        "name": "Singapore Airlines"
+      },
+      {
+        "code": "LX",
+        "name": "SWISS"
+      },
+      {
+        "code": "TP",
+        "name": "Tap Air Portugal"
+      },
+      {
+        "code": "TG",
+        "name": "THAI"
+      },
+      {
+        "code": "TK",
+        "name": "Turkish Airlines"
+      },
+      {
+        "code": "UA",
+        "name": "United"
+      },
+      {
+        "code": "VS",
+        "name": "Virgin Atlantic"
+      },
+      {
+        "code": "WS",
+        "name": "WestJet"
+      }
+    ],
+    "hubs": [
+      {
+        "code": "AMS",
+        "name": "Amsterdam"
+      },
+      {
+        "code": "BER",
+        "name": "Berlin"
+      },
+      {
+        "code": "BOS",
+        "name": "Boston"
+      },
+      {
+        "code": "BRU",
+        "name": "Brussels"
+      },
+      {
+        "code": "CMN",
+        "name": "Casablanca"
+      },
+      {
+        "code": "CLT",
+        "name": "Charlotte"
+      },
+      {
+        "code": "ORD",
+        "name": "Chicago"
+      },
+      {
+        "code": "CVG",
+        "name": "Cincinnati"
+      },
+      {
+        "code": "CLE",
+        "name": "Cleveland"
+      },
+      {
+        "code": "CMH",
+        "name": "Columbus"
+      },
+      {
+        "code": "CPH",
+        "name": "Copenhagen"
+      },
+      {
+        "code": "DUB",
+        "name": "Dublin"
+      },
+      {
+        "code": "FRA",
+        "name": "Frankfurt am Main"
+      },
+      {
+        "code": "GVA",
+        "name": "Geneva"
+      },
+      {
+        "code": "IST",
+        "name": "Istanbul"
+      },
+      {
+        "code": "LHR",
+        "name": "London"
+      },
+      {
+        "code": "MAD",
+        "name": "Madrid"
+      },
+      {
+        "code": "MUC",
+        "name": "Munich"
+      },
+      {
+        "code": "ORF",
+        "name": "Norfolk"
+      },
+      {
+        "code": "MCO",
+        "name": "Orlando"
+      },
+      {
+        "code": "CDG",
+        "name": "Paris"
+      },
+      {
+        "code": "PHL",
+        "name": "Philadelphia"
+      },
+      {
+        "code": "PDL",
+        "name": "Ponta Delgada"
+      },
+      {
+        "code": "RDU",
+        "name": "Raleigh"
+      },
+      {
+        "code": "KEF",
+        "name": "Reykjavík"
+      },
+      {
+        "code": "FCO",
+        "name": "Rome"
+      },
+      {
+        "code": "VIE",
+        "name": "Vienna"
+      },
+      {
+        "code": "WAW",
+        "name": "Warsaw"
+      },
+      {
+        "code": "IAD",
+        "name": "Washington"
+      },
+      {
+        "code": "ZRH",
+        "name": "Zürich"
+      }
+    ]
+  },
+  "baggage_allowance_links": [
+    {
+      "airline_code": "EI",
+      "airline": "Aer Lingus",
+      "url": "http://www.aerlingus.com/help/help/baggageinformation/"
+    },
+    {
+      "airline_code": "DL",
+      "airline": "Delta",
+      "url": "https://www.delta.com/content/www/en_US/traveling-with-us/baggage/before-your-trip/checked.html"
+    },
+    {
+      "airline_code": "IB",
+      "airline": "Iberia",
+      "url": "https://www.iberia.com/us/baggage/?language=en"
+    },
+    {
+      "airline_code": "AT",
+      "airline": "Royal Air Maroc",
+      "url": "https://www.royalairmaroc.com/us-en/baggage-information"
+    },
+    {
+      "airline_code": "TP",
+      "airline": "Tap Air Portugal",
+      "url": "https://www.flytap.com/en-us/baggage"
+    }
+  ],
+  "passenger_assistance_links": [
+    {
+      "airline_code": "TP",
+      "airline": "Tap Air Portugal",
+      "url": "https://www.flytap.com/en-pt/information/special-needs"
+    },
+    {
+      "airline_code": "DL",
+      "airline": "Delta",
+      "url": "https://www.delta.com/us/en/accessible-travel-services/overview"
+    },
+    {
+      "airline_code": "EI",
+      "airline": "Aer Lingus",
+      "url": "https://www.aerlingus.com/travel-information/special-assistance/"
+    },
+    {
+      "airline_code": "AT",
+      "airline": "Royal Air Maroc",
+      "url": "https://www.royalairmaroc.com/ma-en/information/special-attendance"
+    },
+    {
+      "airline_code": "IB",
+      "airline": "Iberia",
+      "url": "https://www.iberia.com/es/fly-with-iberia/special-needs/"
+    }
+  ]
+}
