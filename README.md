@@ -40,7 +40,7 @@ Google Flights has the best fare coverage of any consumer search engine, but it 
 | MCP framework   | Official [`mcp`](https://github.com/modelcontextprotocol/python-sdk) SDK v2: `MCPServer` from `mcp.server`, as required by the lab |
 | Flights backend | [SearchApi](https://www.searchapi.io/docs/google-flights-api) for all five tools, accessed through `httpx` |
 | Validation      | Pydantic models for tool inputs and outputs                            |
-| Packaging       | `uv` / `pyproject.toml`, runnable through `uvx fastflights-mcp`        |
+| Packaging       | setuptools build backend in `pyproject.toml`; published command runnable through `uvx fastflights-mcp` |
 
 The SDK version and installation requirements will be checked against the professor's worked example before implementation. Both the root `server.py` launcher and the published `fastflights-mcp` console command will call the same `main()` entry point in `fastflights_mcp.server`. Publishing through `uvx` remains part of the project.
 

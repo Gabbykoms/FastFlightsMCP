@@ -8,6 +8,10 @@
 
 ## Working rules
 
+- Gabriel wants to understand and own important project decisions. Explain
+  tradeoffs and get his approval before introducing new technologies or making
+  major architecture, cost, security, or deployment decisions. Proceed with
+  routine implementation within already agreed decisions.
 - Week 9: the MCP server is server.py, built with the mcp SDK version 2
   (MCPServer from mcp.server; not FastMCP). Stages assigned: plan, tests.
 - Tests for a tool are written before the tool's code, and go through the

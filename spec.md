@@ -456,6 +456,7 @@ timeout and bounded retries; exact values remain an implementation-plan decision
 
 | Dependency | Reason |
 |---|---|
+| `setuptools` (build only) | Approved by Gabriel to build the src-layout package for PyPI; exposes `fastflights-mcp` through the shared server entry point. Not a runtime service. |
 | `mcp` | Official MCP server and protocol interfaces required by the lab; course example reports 2.3.0; verify and pin the working version during implementation. |
 | `pytest` | Offline protocol tests covering schemas, validation, empty results, and simulated upstream failures. |
 | `httpx` | HTTP client for SearchApi with async requests and explicit timeouts; preferred over stdlib `urllib` for integration with the async server. |
