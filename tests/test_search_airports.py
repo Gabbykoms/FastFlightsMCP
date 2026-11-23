@@ -143,3 +143,18 @@ def test_location_search_sends_the_key_in_a_header_not_the_url(monkeypatch):
     assert "api_key" not in seen["params"]
     assert "synthetic-key-do-not-leak" not in str(seen["url"]) + str(seen["params"])
     assert seen["headers"]["Authorization"] == "Bearer synthetic-key-do-not-leak"
+
+
+def test_location_search_sends_the_text_as_q(monkeypatch):
+    """Recorded live on 2026-11-23: SearchApi's Location Search answers HTTP 400
+    "Missing required parameter q." when the text is sent as `query`."""
+    seen = {}
+
+    def fake_get(url, **kwargs):
+        seen.update(url=url, **kwargs)
+        return httpx.Response(200, json={"locations": []}, request=httpx.Request("GET", url))
+
+    monkeypatch.setattr(search_airports.httpx, "get", fake_get)
+    monkeypatch.setenv("SEARCHAPI_API_KEY", "synthetic-key-do-not-leak")
+    search_airports._location_search("New York")
+    assert seen["params"] == {"engine": "google_flights_location_search", "q": "New York"}
