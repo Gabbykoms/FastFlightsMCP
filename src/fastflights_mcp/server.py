@@ -5,7 +5,8 @@ from collections.abc import Sequence
 from typing import Any
 
 from mcp.server import MCPServer
-from mcp.server.mcpserver.exceptions import ToolError
+
+from fastflights_mcp import provider
 
 # Tool modules will register on this instance; they must not create another server.
 mcp = MCPServer(
@@ -15,12 +16,11 @@ mcp = MCPServer(
 
 
 async def fetch_flight_candidates(**query: Any) -> list[dict[str, Any]]:
-    """Adapter boundary: return normalized complete itinerary candidates from SearchApi.
+    """Adapter boundary the tools call: normalized complete itinerary candidates.
 
-    Placeholder until the real adapter lands; tests replace it with a fake.
+    Delegates to provider.py; tests replace this attribute with a fake.
     """
-    raise ToolError("UPSTREAM_UNAVAILABLE: The SearchApi adapter is not implemented in "
-                    "this build.")
+    return await provider.fetch_flight_candidates(**query)
 
 
 # Registered after `mcp` and the adapter exist: the tool module reads this module at call time.

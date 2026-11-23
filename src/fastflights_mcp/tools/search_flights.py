@@ -96,6 +96,12 @@ def _validate(origin, destination, depart_date, return_date, adults, children,
         raise ToolError(f"The whole party cannot exceed {MAX_PARTY} passengers.")
     if strict_budget and budget is None:
         raise ToolError("strict_budget requires a budget.")
+    if children or infants_in_seat or infants_on_lap:
+        # SearchApi returns one party total and a child's fare can differ from an adult's,
+        # so no per-person price can be derived yet (see spec.md section 3.3).
+        raise ToolError("UNSUPPORTED_FILTER: Searches with children or infants are not "
+                        "supported yet because the provider returns one price for the whole "
+                        "party. Search with adults only.")
 
 
 def _aware(value: str) -> datetime:
@@ -239,6 +245,7 @@ async def search_flights(
     Omit return_date for one-way. Returns up to five itineraries and one recommendation.
     An empty result is a normal answer; ask the traveler before changing the budget,
     dates or airports. Prices and budgets are per person for the whole itinerary.
+    Children and infants are not supported yet: the party must be adults only.
     """
     _validate(origin, destination, depart_date, return_date, adults, children,
               infants_in_seat, infants_on_lap, budget, strict_budget)
@@ -275,6 +282,10 @@ async def search_flights(
     else:
         message = ("No eligible complete itinerary was found for these airports, dates and "
                    "filters. Ask the traveler whether to change the budget, dates or airports.")
+    if not getattr(candidates, "exhaustive", True):
+        note = ("Not exhaustive: the upstream request limit stopped the search early, so "
+                "better options may exist.")
+        message = note if message is None else f"{message} {note}"
     return FlightSearchResult(
         query={**search, "budget": budget, "strict_budget": strict_budget,
                "max_stops": max_stops},
