@@ -87,8 +87,10 @@ def _location_search(query: str) -> list[dict]:
         params={
             "engine": "google_flights_location_search",
             "query": query,
-            "api_key": api_key,
         },
+        # The key goes in a header, never the URL: httpx logs URLs and puts them in
+        # exception text.
+        headers={"Authorization": f"Bearer {api_key}"},
         timeout=_REQUEST_TIMEOUT,
     )
     response.raise_for_status()
@@ -134,7 +136,7 @@ async def search_airports(
         locations = _location_search(query)
     except httpx.HTTPStatusError as error:
         # Log the category only; never echo the response body or URL, both
-        # of which can carry the api_key parameter.
+        # of which can carry provider text or request details.
         logger.warning(
             "location_search upstream HTTP %s", error.response.status_code
         )

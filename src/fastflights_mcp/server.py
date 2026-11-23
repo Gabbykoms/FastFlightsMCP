@@ -39,6 +39,9 @@ def main(argv: Sequence[str] | None = None) -> None:
     args = parser.parse_args(argv)
     # stderr is the logging default. stdout belongs to the stdio MCP protocol.
     logging.basicConfig(level=logging.INFO)
+    # httpx logs every request URL, query string included, at INFO. A URL can carry a
+    # credential, so keep that line out of the server's logs.
+    logging.getLogger("httpx").setLevel(logging.WARNING)
     if args.http:
         mcp.run(transport="streamable-http", host="127.0.0.1", port=8000)
     else:
