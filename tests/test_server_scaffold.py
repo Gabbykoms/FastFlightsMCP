@@ -1,7 +1,6 @@
 """Offline checks for the shared application and its startup boundary."""
 import importlib
 import runpy
-import sys
 from pathlib import Path
 from unittest.mock import Mock
 
@@ -9,7 +8,6 @@ import pytest
 from mcp import Client
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
 
 
 @pytest.fixture
