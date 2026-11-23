@@ -9,6 +9,9 @@ These tests pin the contract before the implementation:
 
 No model, no network, no subprocess, no Redis, no real key.
 """
+import json
+from pathlib import Path
+
 import httpx
 import pytest
 from mcp import Client
@@ -158,3 +161,93 @@ def test_location_search_sends_the_text_as_q(monkeypatch):
     monkeypatch.setenv("SEARCHAPI_API_KEY", "synthetic-key-do-not-leak")
     search_airports._location_search("New York")
     assert seen["params"] == {"engine": "google_flights_location_search", "q": "New York"}
+
+
+# --- Mapping the real Location Search response ----------------------------------------------
+
+LOCATION_FIXTURE = Path(__file__).parent / "fixtures" / "searchapi" / "location_search_new_york.json"
+
+
+def new_york_locations():
+    return json.loads(LOCATION_FIXTURE.read_text())["locations"]
+
+
+def place(name, *codes):
+    """Synthetic place in the recorded shape: a name and a nested list of airports."""
+    return {"full_name": name, "type": "city", "airports": [
+        {"type": "airport", "airport_code": code, "title": f"{code} Airport", "city": name}
+        for code in codes]}
+
+
+def test_matches_are_the_airports_of_the_best_matching_place():
+    """Recorded: 'New York' returns 5 places. Only the first (the city) is the match; the
+    other four are upstate cities (Buffalo, Niagara Falls, Rochester, Albany)."""
+    locations = new_york_locations()
+    matches, place_name = search_airports._to_matches(locations)
+    assert place_name == "New York"
+    first = locations[0]["airports"]
+    assert [m.iata for m in matches] == [a["airport_code"] for a in first] == ["JFK", "LGA", "EWR"]
+    assert [m.name for m in matches] == [a["title"] for a in first]
+    assert [m.city for m in matches] == [a["city"] for a in first]
+    assert [m.country for m in matches] == ["US", "US", "US"]  # from airportsdata; SearchApi has none
+
+
+def test_duplicates_and_invalid_codes_are_skipped():
+    locations = [place("X", "JFK", "JFK", "12", "LGA")]
+    matches, _ = search_airports._to_matches(locations)
+    assert [m.iata for m in matches] == ["JFK", "LGA"]
+
+
+def test_a_place_without_airports_is_passed_over():
+    locations = [{"full_name": "Some State", "type": "region", "airports": []}, place("Some City", "LGA")]
+    matches, place_name = search_airports._to_matches(locations)
+    assert place_name == "Some City" and [m.iata for m in matches] == ["LGA"]
+
+
+def test_an_airport_unknown_to_airportsdata_keeps_its_code_with_no_country():
+    matches, _ = search_airports._to_matches([place("Nowhere", "ZZZ")])
+    assert [(m.iata, m.country) for m in matches] == [("ZZZ", "")]
+
+
+def test_no_places_is_an_empty_result():
+    assert search_airports._to_matches([]) == ([], "")
+
+
+@pytest.mark.anyio
+async def test_the_tool_returns_real_matches_not_blank_ones(monkeypatch, fake_cache):
+    monkeypatch.setattr(search_airports, "_location_search", lambda query: new_york_locations())
+    async with Client(mcp) as client:
+        result = await client.call_tool("search_airports", {"query": "New York"})
+    assert not result.is_error
+    matches = result.structured_content["matches"]
+    assert [m["iata"] for m in matches] == ["JFK", "LGA", "EWR"]
+    assert all(all(value for value in m.values()) for m in matches), "no blank fields"
+    assert "New York" in result.structured_content["message"]
+
+
+@pytest.mark.anyio
+async def test_an_unrecognized_shape_is_a_data_error_and_is_not_cached(monkeypatch, fake_cache):
+    calls = []
+
+    def stub(query):
+        calls.append(query)
+        return [{"full_name": "Mystery", "something_else": 1}]
+
+    monkeypatch.setattr(search_airports, "_location_search", stub)
+    async with Client(mcp) as client:
+        for _ in range(2):
+            result = await client.call_tool("search_airports", {"query": "Mystery"})
+            assert result.is_error
+            text = " ".join(part.text for part in result.content if hasattr(part, "text"))
+            assert "UPSTREAM_DATA_ERROR" in text
+    assert len(calls) == 2, "a failure must not be cached"
+
+
+def test_a_response_without_a_locations_list_is_rejected(monkeypatch):
+    def fake_get(url, **kwargs):
+        return httpx.Response(200, json={"search_metadata": {}}, request=httpx.Request("GET", url))
+
+    monkeypatch.setattr(search_airports.httpx, "get", fake_get)
+    monkeypatch.setenv("SEARCHAPI_API_KEY", "synthetic-key-do-not-leak")
+    with pytest.raises(ValueError):
+        search_airports._location_search("New York")
