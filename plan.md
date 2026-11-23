@@ -27,13 +27,13 @@ implemented or silently defer them. Settle that scope before declaring completio
 Tool ownership follows the team's remote plan. Gabriel has confirmed ownership
 of the shared scaffold, integration, CI, and submission coordination as well as
 deployment and distribution. Nadia has accepted cache integration and model evaluation. Patrick
-still needs to confirm the proposed provider-fixture ownership.
+has confirmed ownership of the calendar and price-insight provider fixtures.
 
 | Owner | Work |
 |---|---|
 | Gabriel | `search_flights`, `search_multi_city`, shared server/package scaffold, integration, CI, submission coordination, hosted deployment, and PyPI/uvx distribution. Ownership confirmed. |
 | Nadia | `search_airports` and the agent loop. Cache integration and model evaluation ownership accepted. |
-| Patrick | `find_cheapest_dates` and `get_price_insight`. Proposed owner for calendar/insight provider fixtures. |
+| Patrick | `find_cheapest_dates` and `get_price_insight`. Calendar/insight provider-fixture ownership confirmed. |
 | All members | Review contracts and docstrings, run local host verification, review PRs, and explain the whole system. Gabriel coordinates collection of evidence and submission artifacts. |
 
 Create one shared server instance and one provider interface first. Tool modules
@@ -221,7 +221,7 @@ pass, but no flight tools are registered. The failing `search_flights` test
 baseline is on `feat/search-flights`, not on `main`.
 
 Hold `feat/search-flights` and further tool implementation until PR #10 is
-merged. Patrick's proposed fixture ownership remains pending his review.
+merged. Patrick's fixture ownership is confirmed by his PR #10 comment, as clarified by Gabriel.
 For each tool, preserve separate failing-test and passing-implementation commits.
 The proof below specifies required checks, not completed verification; record
 actual results in `CHECKS.md` as they are obtained.
@@ -373,4 +373,4 @@ Record interim course checkpoints separately: the Week 9 checks/tag do not
 claim completion of this full milestone. Finish the final course submission
 artifacts and tag only after their actual checks pass.
 
-**Approved by:** Gabriel (Gabbykoms) and Nadia Boudhaim Maguire, 2026-11-22. Nadia accepts the proposed cache integration and model evaluation. Patrick's proposed fixture ownership awaits his agreement.
+**Approved by:** Gabriel (Gabbykoms), Nadia Boudhaim Maguire, and Patrick (pmansy1), 2026-11-22. Nadia accepts cache integration and model evaluation. Patrick accepts calendar and price-insight provider-fixture ownership through his [PR #10 comment](https://github.com/Gabbykoms/FastFlightsMCP/pull/10#issuecomment-7088709917), with that meaning confirmed by Gabriel.
