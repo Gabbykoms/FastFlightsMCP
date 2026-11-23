@@ -150,6 +150,20 @@ async def test_invalid_inputs_rejected_before_upstream(server, backend, query, p
     backend.assert_not_awaited()
 
 
+@pytest.mark.parametrize("patch", [
+    {"children": 1}, {"infants_in_seat": 1}, {"infants_on_lap": 1},
+    {"adults": 2, "children": 2, "infants_on_lap": 1},
+])
+async def test_children_and_infants_are_rejected_until_priced(server, backend, query, patch):
+    """SearchApi returns one party total, and a child's fare can differ from an adult's
+    (tests/fixtures/searchapi/README.md), so no per-person price can be derived yet."""
+    result = await call(server, {**query, **patch})
+    assert result.is_error
+    text = " ".join(getattr(item, "text", "") for item in result.content)
+    assert "UNSUPPORTED_FILTER" in text
+    backend.assert_not_awaited()
+
+
 async def test_return_before_departure(server, backend, query):
     earlier = datetime.fromisoformat(query["depart_date"]).date() - timedelta(days=1)
     result = await call(server, {**query, "return_date": earlier.isoformat()})
