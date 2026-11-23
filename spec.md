@@ -219,6 +219,14 @@ results. Verify a recorded fixture contains every required airport field before
 promising this mapping. City expansion follows the decided AirportSet policy
 in section 2; the older pick-one wording in the airport intent is superseded.
 
+**Recorded provider behavior (2026-11-23):** Location Search takes the text as `q`, not
+`query`. It returns places (mostly cities, best match first), each with a nested
+`airports` list of `airport_code`, `title`, `city` and `distance`, and **no country**.
+The tool returns the airports of the best matching place only, takes `country` from
+`airportsdata`, skips duplicate and malformed codes, and reports a non-empty response
+with no readable airports as `UPSTREAM_DATA_ERROR`. Only a city-name query is recorded;
+airport-name queries are not.
+
 ### 3.3 `search_flights`
 
 **When to call:** find complete one-way or round-trip options after locations,
