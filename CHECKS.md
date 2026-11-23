@@ -149,7 +149,7 @@
 ### `search_airports`: live failure in Claude Code, the `q` parameter and the real mapping (2026-11-23)
 
 - In the first Claude Code session (plain `claude`, not `orclaude`; transcript in
-  `transcripts/week09-claude-code.txt`) the model called `search_airports` 4 times and every call
+  `transcripts/week09-claude-code-1-airport-lookup-failed.txt`, committed with the Week 9 PR) the model called `search_airports` 4 times and every call
   failed with "provider returned an error". It then used airport codes it already knew, and
   `search_flights` worked live for JFK, EWR and LGA to LIS. That also showed Claude Code passes the
   launching shell's `SEARCHAPI_API_KEY` to the server; `.mcp.json` has no `env` entry.
