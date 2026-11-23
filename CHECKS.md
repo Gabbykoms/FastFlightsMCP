@@ -45,6 +45,31 @@
 - The remote `plan-week9` draft assigns this tool to Gabe, but its `Approved by`
   field was empty when inspected. Plan approval remains outstanding.
 
+### `search_flights`: revised tests-first baseline
+
+- Synced `feat/search-flights` with merged Week 9 plan and shared scaffold;
+  preserved the original baseline below as historical evidence.
+- Tests now import `fastflights_mcp.server`; root `server.py` stays a launcher.
+  The normalized adapter seam is `fastflights_mcp.server.fetch_flight_candidates`:
+  future registration code must expose/use this imported adapter reference.
+  Tests temporarily inject an AsyncMock at this seam without implementing a tool.
+  Provider response mapping remains a separate fixture-test responsibility.
+- Every call first checks discovery so an unknown-tool error cannot pass an
+  invalid-input test. Scaffold discovery permits future tool registration.
+- Added complete round trips, response-envelope checks, 59/60/61-minute ranking,
+  budget-slot reuse, no-within-budget recommendations, exact 20% limits,
+  rejection of worse alternatives, nonstop filtering across budget groups,
+  duration-versus-stop ranking, additional validation, and sanitized HTTP errors.
+- Incomplete round-trip errors must carry `UPSTREAM_DATA_ERROR`; arbitrary
+  errors no longer satisfy that case.
+- Command: `PYTHONPATH=src .venv/bin/python -m pytest tests -q --tb=short`.
+  Explicit source selection avoids testing a stale installed wheel.
+- Actual result: **52 failed, 5 passed**. All flight cases fail at discovery
+  because `search_flights` is not registered; there are no setup errors.
+  Five scaffold cases pass. This is a failing baseline, not verified flight behavior.
+- No network, paid provider calls, model calls, or tool implementation.
+  `git diff --check` passed. Full local output: `/tmp/fastflights-revised-tests.log`.
+
 ### Tools
 | Tool | Tests | What happened when Claude Code called it |
 |---|---|---|
