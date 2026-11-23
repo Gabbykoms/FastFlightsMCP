@@ -2,14 +2,31 @@
 import argparse
 import logging
 from collections.abc import Sequence
+from typing import Any
 
 from mcp.server import MCPServer
+from mcp.server.mcpserver.exceptions import ToolError
 
 # Tool modules will register on this instance; they must not create another server.
 mcp = MCPServer(
     name="FastFlightsMCP",
     instructions="Search flight data using the registered tools. Never invent fares.",
 )
+
+
+async def fetch_flight_candidates(**query: Any) -> list[dict[str, Any]]:
+    """Adapter boundary: return normalized complete itinerary candidates from SearchApi.
+
+    Placeholder until the real adapter lands; tests replace it with a fake.
+    """
+    raise ToolError("UPSTREAM_UNAVAILABLE: The SearchApi adapter is not implemented in "
+                    "this build.")
+
+
+# Registered after `mcp` and the adapter exist: the tool module reads this module at call time.
+from fastflights_mcp.tools import search_flights as _search_flights  # noqa: E402
+
+_search_flights.register(mcp)
 
 
 def main(argv: Sequence[str] | None = None) -> None:
