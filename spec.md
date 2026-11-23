@@ -249,6 +249,14 @@ agreed allowance. The host offers to adjust preferences.
 must not become successful empty responses. Provider failure during completion
 of round trips is reported as a failure, not as evidence of no availability.
 
+**Interim limitation (decided by Gabriel):** until the mixed-party price basis is
+settled, a search with `children`, `infants_in_seat` or `infants_on_lap` above zero
+is rejected with `UNSUPPORTED_FILTER` before any upstream request. SearchApi returns
+one party total, and recordings show a child's fare can differ from an adult's (for
+example 993 instead of 1042 on one option), so a per-person price cannot be derived
+without asserting a fare. The arguments stay in the schema. Adults-only parties are
+priced as the provider's total divided by the number of adults.
+
 ### 3.4 `search_multi_city`
 
 **When to call:** search a specified sequence of 2–6 legs, or replace one leg
