@@ -23,6 +23,53 @@
   editable-install compatibility remains to be investigated. This verification
   reused existing dependencies, not a fully clean external environment.
 
+### `search_flights`: tests-first baseline (2026-11-22)
+
+- Branch: `feat/search-flights`, based on merged specification PR #5.
+- Environment: Python 3.15.2, MCP 2.3.0, pytest 9.2.0.
+- Command: `.venv/bin/python -m pytest tests/test_search_flights.py -q --tb=short`.
+- Result: 29 collected cases, 29 setup errors: `ModuleNotFoundError: No module
+  named 'server'`. No server implementation exists yet; these are not passing
+  tests or evidence of correct runtime behavior.
+- Cases cover discovery/schema, strict wrong-type rejection with tool-body
+  tracing, input bounds, cross-field validation, empty results, defaults,
+  airport sets, sanitized timeout errors, budget selection, strict ceilings,
+  the five-result limit, and exclusion of incomplete round trips.
+- Tests forbid network access and remove the SearchApi key from the test
+  environment. Candidate fixtures are synthetic normalized itineraries, not
+  recordings of provider responses. Raw provider mapping and complete-return
+  selection still need their own fixture tests.
+- Proposed test seam: async `server.fetch_flight_candidates(**query)` returns
+  normalized candidates. This is an internal testing boundary, not a new MCP tool.
+- No paid calls, model calls, or Claude Code verification were performed.
+- The remote `plan-week9` draft assigns this tool to Gabe, but its `Approved by`
+  field was empty when inspected. Plan approval remains outstanding.
+
+### `search_flights`: revised tests-first baseline
+
+- Synced `feat/search-flights` with merged Week 9 plan and shared scaffold;
+  preserved the original baseline below as historical evidence.
+- Tests now import `fastflights_mcp.server`; root `server.py` stays a launcher.
+  The normalized adapter seam is `fastflights_mcp.server.fetch_flight_candidates`:
+  future registration code must expose/use this imported adapter reference.
+  Tests temporarily inject an AsyncMock at this seam without implementing a tool.
+  Provider response mapping remains a separate fixture-test responsibility.
+- Every call first checks discovery so an unknown-tool error cannot pass an
+  invalid-input test. Scaffold discovery permits future tool registration.
+- Added complete round trips, response-envelope checks, 59/60/61-minute ranking,
+  budget-slot reuse, no-within-budget recommendations, exact 20% limits,
+  rejection of worse alternatives, nonstop filtering across budget groups,
+  duration-versus-stop ranking, additional validation, and sanitized HTTP errors.
+- Incomplete round-trip errors must carry `UPSTREAM_DATA_ERROR`; arbitrary
+  errors no longer satisfy that case.
+- Command: `PYTHONPATH=src .venv/bin/python -m pytest tests -q --tb=short`.
+  Explicit source selection avoids testing a stale installed wheel.
+- Actual result: **52 failed, 5 passed**. All flight cases fail at discovery
+  because `search_flights` is not registered; there are no setup errors.
+  Five scaffold cases pass. This is a failing baseline, not verified flight behavior.
+- No network, paid provider calls, model calls, or tool implementation.
+  `git diff --check` passed. Full local output: `/tmp/fastflights-revised-tests.log`.
+
 ### Tools
 | Tool | Tests | What happened when Claude Code called it |
 |---|---|---|

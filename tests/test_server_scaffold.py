@@ -25,8 +25,9 @@ async def test_application_supports_protocol_discovery(app):
     async with Client(app.mcp) as client:
         listed = await client.list_tools()
     assert isinstance(listed.tools, list)
-    # Tool modules will be added separately; do not advertise unimplemented tools.
-    assert listed.tools == []
+    # Tool-specific suites assert registrations; this check remains valid as tools land.
+    names = [tool.name for tool in listed.tools]
+    assert len(names) == len(set(names))
 
 
 def test_default_startup_uses_stdio(app, monkeypatch, capsys):
