@@ -1,8 +1,8 @@
 # FastFlightsMCP: Multi-city search
 
-Status: Ready for team review — interview complete.
+Status: Approved — interview complete.
 Named team approvers: Nadia and Patrick
-Approval status: Reviewed and approved by Patrick, November 22, 2026; Nadia's review pending.
+Approval status: Reviewed and approved by Patrick and Nadia, November 22, 2026.
 
 ## Purpose
 
@@ -220,4 +220,4 @@ remaining legs as partial results or change the route automatically.
 
 ## Open decisions
 
-- Final review and approval by Nadia is pending.
+- Which ranking and budget rules search_multi_city enforces in code and which are left to the model; decide in spec.md, as for search_flights.
