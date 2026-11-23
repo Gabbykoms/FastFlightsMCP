@@ -8,7 +8,7 @@ version = "0.1.0.dev0"
 description = "MCP server for flight search with SearchApi"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = ["mcp>=2,<3"]
+dependencies = ["mcp>=2,<3", "httpx"]
 
 [project.optional-dependencies]
 test = ["pytest"]
@@ -21,3 +21,4 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["src"]
