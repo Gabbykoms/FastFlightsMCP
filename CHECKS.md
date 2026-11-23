@@ -131,6 +131,21 @@
   unrecorded; children and infants are rejected (stopgap) because the provider returns a
   party total; no Claude Code check yet.
 
+### `search_airports`: API key kept out of URLs and logs (2026-11-23)
+
+- Found while reviewing PR #11 (Nadia's tool, merged 2026-11-23): `_location_search` sent
+  `SEARCHAPI_API_KEY` as the `api_key` query parameter. Checked offline with a synthetic key and an
+  `httpx.MockTransport`: with the server's `logging.basicConfig(level=logging.INFO)`, httpx wrote the
+  full URL, key included, to the log, and the `HTTPStatusError` text contained it too.
+- Fix, tests first (`6a86889` failing, `d7730af` fix): the key now travels in an `Authorization: Bearer`
+  header, and `main()` sets the `httpx` logger to WARNING so request URLs are not logged for any tool.
+- Result: `python3 -m pytest tests -q`: **154 passed** (152 before, plus 2). Each fix was reverted in
+  turn and exactly its own test failed.
+- Not checked: no live `search_airports` request has been made (it is billed, and its response
+  mapping is unrecorded). Other review findings on #11 are not addressed here: a blocking
+  `httpx.get` inside an async tool, empty results cached, no stable error categories, and a cache
+  with no expiry.
+
 ### Tools
 | Tool | Tests | What happened when Claude Code called it |
 |---|---|---|
