@@ -112,10 +112,24 @@
 - Real stdio check: `env -u SEARCHAPI_API_KEY python3 client.py` exits 0. The valid
   call returns `CONFIGURATION_ERROR` with no network request, and `adults=10` is rejected by the
   schema. The tool description now says children and infants are not supported.
-- **Not verified:** no live SearchApi request was made through the adapter. Real responses
-  are covered only by the recordings (one route, one date). Children and infants are
-  rejected (stopgap) because the provider returns a party total; SearchApi's real "no
-  flights" response is unrecorded; no Claude Code check yet.
+- Live check (Gabriel approved one request): `client.py` with the key forwarded made one real
+  one-way search, JFK to LIS on 2027-01-22, economy, 1 adult, USD. The server log shows one
+  `GET https://www.searchapi.io/api/v1/search?... "HTTP/1.1 200 OK"`. The tool returned 5
+  itineraries with no error and no message; the recommended one is the nonstop TP 210 at
+  404 USD, 2027-01-22T22:00:00-05:00 to 2027-01-23T10:05:00+00:00, 425 minutes. The others:
+  DL 272 (527 USD, nonstop), AT 201 + AT 980 (521 USD, 1 stop), IB 212 + IB 529 (535 USD,
+  1 stop) and FI 614 + FI 954 (502 USD, 1 stop, 2185 minutes, ranked last). The key value
+  is absent from stdout and stderr. Cost at most $0.004.
+- Finding: the MCP SDK's stdio client passes the server it launches only HOME, LOGNAME,
+  PATH, SHELL, TERM and USER. `client.py` therefore reported `CONFIGURATION_ERROR` even with
+  the key exported, until it was changed to forward `SEARCHAPI_API_KEY` explicitly.
+  `plan.md` says the server inherits the key from the launching shell; that holds for
+  nothing verified yet, and Claude Code's handling of `.mcp.json` environment variables
+  must be checked in the registration step.
+- **Not verified:** round trips, multiple airports and the error paths against the live
+  provider (only a one-way search ran live); SearchApi's real "no flights" response is
+  unrecorded; children and infants are rejected (stopgap) because the provider returns a
+  party total; no Claude Code check yet.
 
 ### Tools
 | Tool | Tests | What happened when Claude Code called it |

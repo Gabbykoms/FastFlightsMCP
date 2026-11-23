@@ -12,6 +12,7 @@ billed SearchApi request (one request for a one-way search).
 """
 import asyncio
 import json
+import os
 import sys
 from datetime import date, timedelta
 
@@ -19,7 +20,11 @@ from mcp import Client, StdioServerParameters
 
 
 async def main():
-    server = StdioServerParameters(command=sys.executable, args=["server.py"])
+    # The MCP stdio client passes the child only a few safe variables (HOME, PATH, ...),
+    # so the key must be forwarded explicitly, and only when it is set.
+    key = os.environ.get("SEARCHAPI_API_KEY")
+    env = {"SEARCHAPI_API_KEY": key} if key else None
+    server = StdioServerParameters(command=sys.executable, args=["server.py"], env=env)
     async with Client(server) as client:
         listed = await client.list_tools()
         for t in listed.tools:
