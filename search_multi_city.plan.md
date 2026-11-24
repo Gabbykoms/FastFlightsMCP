@@ -104,3 +104,55 @@ PR title example: "Tests only: search_multi_city (2–6 legs, city continuity, 2
 
 ## Not in this work
 Customization and `STALE_SELECTION`, children and infant pricing, caching, separate-ticket detection beyond `None` (unknown).
+
+---
+
+# Amendment 1 (2026-11-24): refill dead branches and settle the timeouts
+
+Status: proposed, for Gabriel's approval. Builds on the implementation in #26.
+
+## Why
+Two live runs of the implemented tool (details in `CHECKS.md`) showed problems the offline tests could not:
+
+1. **A search can come back empty although flights exist.** For Chicago → Madrid → Rome → Chicago all three final-leg requests returned the recorded "no results" error, so the beam's three kept branches were all dead and the search ended after 7 requests, with 3 of the 10 allowed unused. In the first live run one of the two leg-2 branches was also dead, as in the recording. Both dead branches so far involved a low-cost carrier (easyJet, Wizz Air), and the beam favors the cheapest projected price. That link is a guess from two cases, not a finding.
+2. **The 20 s request timeout is too tight.** Across 15 timed chained requests the times were 1.9, 2.1, 2.2, 2.3, 2.6, 4.1, 5.2, 5.4, 6.9, 9.3, 9.4, 10.0, 19.4 and **28.7** seconds, plus one timeout above 20 s. About one search in eight would hit it. Time does not track response size (28.7 s for 44 KB, 2 s for 1 KB). One timeout currently fails the whole search, and a typical 3-leg search takes about 60 s in a row.
+
+## Decisions to approve
+1. **Refill:** a branch that yields nothing usable is replaced by the next-ranked partial trip while the request budget allows, so a dead branch no longer ends the search.
+2. **Timeouts for this tool only:** 45 s per request (the slowest success was 28.7 s) and a 2-minute deadline per call. One-way and round-trip searches keep 20 s.
+3. **A branch that times out is skipped**, like a dead branch. The search fails with `UPSTREAM_TIMEOUT` only when it ends with no trip and at least one branch timed out.
+4. **Out of scope:** running a step's requests in parallel (it would cut a 3-leg search from about 60 s to about 45 s, but SearchApi's rate limits are unchecked), customization, children and infants.
+
+## Behavior
+**Refill.** At each step the partial trips are ranked as now (price, travel minutes, id). Branches are expanded in rank order. A branch is *live* when its response gives at least one usable continuation (or, at the last step, at least one candidate); otherwise it is *dead* (the recorded error, no options, or every option filtered). Expansion continues until `width` live branches exist, the ranked partials run out, or the spare budget is gone. Spare budget at a step is `MAX_REQUESTS_PER_CALL − used − width × (steps still to come after this one)`: the refill may never take requests that later steps need for their own `width` branches. At the first expansion stage the spare is 6 for 2 legs, 3 for 3 legs, 0 for 4 legs, 1 for 5 legs (width 2) and 4 for 6 legs (width 1). So refill helps most for 2, 3 and 6 legs, does nothing for 4 and little for 5; that is accepted and stated in `spec.md`.
+
+`exhaustive` stays false whenever any partial trip went unexpanded, the cap was reached or the deadline stopped the search. A search that ends empty after dead branches says "not exhaustive" through the existing message.
+
+**Timeouts.**
+- `MULTI_CITY_REQUEST_TIMEOUT_SECONDS = 45` is the per-request timeout of the multi-city client; `REQUEST_TIMEOUT_SECONDS = 20` is untouched.
+- `MULTI_CITY_DEADLINE_SECONDS = 120`: checked before each request on a monotonic clock (test hook `_clock`). When it has passed, no new request starts, `exhaustive` is false, and whatever complete trips exist are returned.
+- An `httpx.TimeoutException` on a branch counts as a request, is logged by class only, and makes the branch dead. If the search ends with no candidates and at least one such timeout, it raises the timeout (which the tool maps to `UPSTREAM_TIMEOUT`); with candidates it returns them as not exhaustive. Other HTTP and transport errors (401, 429, exhausted 5xx retries, connection errors) still propagate unchanged.
+
+## Step 1: tests first (separate PR, failing by design)
+Added to `tests/test_provider.py` (synthetic chains and the recorded dead branch; no new recording, no spend):
+- A dead branch among the best three is replaced by the next-ranked partial; the number of live branches reaches `width` when the budget allows, and the request count never exceeds 10.
+- Refill never uses requests reserved for later steps (a later step still gets `width` requests); the spare is 6, 3, 0, 1 and 4 requests at the first expansion stage for 2, 3, 4, 5 and 6 legs.
+- All branches dead with budget left: every ranked partial is tried, the result is empty and not exhaustive.
+- A branch that times out is skipped; trips from the other branches are returned and marked not exhaustive; if every branch times out the call raises the timeout; a non-timeout error (401, 429) still propagates.
+- The multi-city client uses a 45 s timeout and one-way and round-trip searches still use 20 s (read from the request's `timeout` extension).
+- Deadline: with a fake clock, no request starts after 120 s, complete trips found so far are returned as not exhaustive, and no trips plus a timeout raises the timeout.
+- Existing multi-city tests keep passing, including the beam-width and request-count tests.
+Added to `tests/test_search_multi_city.py`: a result from a deadline-stopped search carries the existing "not exhaustive" message (the fake adapter returns a `Candidates` with `exhaustive=False`, already covered; add only if a gap appears).
+
+## Step 2: implementation (separate PR)
+- `src/fastflights_mcp/provider.py`: the two constants and the `_clock` hook; the step loop in `fetch_multi_city_candidates` expands ranked partials with the refill rule and the deadline check; timeouts on a branch are caught per branch. `_request` and the one-way and round-trip code are unchanged.
+- `spec.md` §3.4 and §6: the timeout, deadline and refill rules. `CHECKS.md`: entry with results.
+
+## Verification
+- `python3 -m pytest tests -q`; the new tests fail first and pass after. Mutation checks: refill off, spare budget ignored (steals later steps' requests), deadline off, timeout treated as fatal, timeout treated as dead without raising when everything timed out, per-request timeout reverted to 20 s.
+- Live (billed, ask first): re-run the Chicago → Madrid → Rome → Chicago search (7 to 10 requests, at most about $0.04) and expect trips, or an honest empty result after trying more branches. Record each request's time.
+
+## Open risks
+- Refill spends more requests per call (up to the cap of 10), so a search can cost up to about $0.04.
+- The per-request timeout and deadline come from 15 samples taken on one evening.
+- If most branches are dead for a route, refill will not fix that; the branch ranking itself may need diversity (for example a penalty or a cap per carrier). Not planned until there is evidence.
