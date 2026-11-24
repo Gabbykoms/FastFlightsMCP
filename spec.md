@@ -328,7 +328,8 @@ provider behavior (`tests/fixtures/searchapi/README.md`, "Multi-city"):
   needs. Measured 2026-11-24: a search with all three kept branches dead returned nothing after
   7 of 10 requests, which is why refill exists.
 - Timeouts for this tool: 45 seconds per request (chained requests took 1.9 to 28.7 s in 15
-  samples from one evening, and one passed 20 s) and a 2-minute deadline per call; after the
+  samples from one evening; in a later run one request reached 45 s and a 3-leg search took 109 s,
+  so 45 s is not a proven ceiling) and a 2-minute deadline per call, which is what bounds a search; after the
   deadline no request starts and the result is not exhaustive. One-way and round-trip searches keep
   20 seconds. A search that ends with no trip and at least one timed-out branch fails with
   `UPSTREAM_TIMEOUT`; with trips it returns them as not exhaustive.
