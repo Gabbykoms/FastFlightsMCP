@@ -154,9 +154,29 @@
 - Test-side bug found while implementing: the helper `step_tokens` in `tests/test_provider.py`
   looked for tokens of the wrong step, which made three beam tests fail against a correct
   adapter; the helper was fixed, the assertions were not changed.
-- **Not verified live:** nothing yet. Recorded evidence is one 3-leg chain (4 billed requests).
-  Not verified: the final price equals the sum of separate fares; 2+ adults; round-trip-like
-  routes; why one recorded branch was dead; customization (not implemented).
+- **Live check (Gabriel approved each attempt):** `search_multi_city` called through the in-memory
+  `Client` with the real adapter and key: New York (JFK, EWR, LGA) to London (LHR, LGW) on
+  2027-03-10, London to Paris (CDG, ORY) on 03-14, Paris to New York on 03-20, economy, 1 adult.
+  - **First attempt failed with `UPSTREAM_TIMEOUT`** on its second request (the leg-1 request had
+    worked); the tool returned the sanitized error, no key or URL. Second attempt, immediately
+    after: no error. 7 requests, all HTTP 200 (4.1, 2.3, 10.0, 5.4, 6.9, **19.4** and 1.9 seconds),
+    which is the planned 1 + 3 + 3. The beam kept the best 3 of 33, then 3 of 22, partial trips,
+    so the result said it was not exhaustive.
+  - Result: 5 complete trips, 823 to 833 USD per person for the whole trip, 1 connecting stop
+    each, 1200 to 1230 minutes of travel. The recommended one, 823 USD: JFK-LHR FI 614 + FI 450
+    (2027-03-10 19:25 to 03-11 10:50), LHR-ORY VY 8058 (03-14 15:30), CDG-JFK DL 267 (03-20
+    14:40). All five use the same first leg, so they differ only in legs 2 and 3.
+    The first three change airport in Paris (arrive ORY, depart CDG) and the last two in London
+    (arrive LHR, depart LGW); the message discloses both, and the gaps are days, not hours.
+  - Cost: at most 9 billed requests (the two from the first attempt, of which the timed-out one may not be billed, plus 7), under $0.04. The key
+    is absent from the output.
+- **Finding: the 20 s request timeout is too tight for chained multi-city requests.** One request
+  took 19.4 s and an earlier one timed out. One timeout currently fails the whole search.
+  Whether to raise the timeout for multi-city, skip a branch that times out, or run the beam's
+  requests in parallel (the seven requests above took about 50 s in a row) is not decided.
+- **Not verified:** the final price equals the sum of separate fares; 2+ adults; why one recorded
+  branch was dead; Claude Code calling the tool (no model session yet); customization (not
+  implemented).
 
 ### `search_airports`: API key kept out of URLs and logs (2026-11-23)
 
