@@ -1,0 +1,58 @@
+Expanded tool calls for transcripts/week09-claude-code-multi-city.txt (same fresh Claude Code
+session, 2026-11-24 about 1:14 AM local, main at ef6e45d). The /export file shows the four calls
+collapsed ("Called fastflights 4 times"); this is the terminal output with them expanded
+(ctrl+o), copied in by hand and condensed: JSON laid out on fewer lines, the search_multi_city
+results summarized one trip per block (values unchanged), Google Flights link text omitted.
+
+fastflights - search_airports (MCP)(query: "New York")
+{"matches": [
+  {"iata": "JFK", "name": "John F. Kennedy International Airport", "city": "New York", "country": "US"},
+  {"iata": "LGA", "name": "LaGuardia Airport", "city": "New York", "country": "US"},
+  {"iata": "EWR", "name": "Newark Liberty International Airport", "city": "Newark", "country": "US"}],
+ "message": "Showing airports for 'New York', the best of 5 matching places."}
+
+fastflights - search_airports (MCP)(query: "London")
+{"matches": [
+  {"iata": "LHR", "name": "Heathrow Airport", "city": "London", "country": "GB"},
+  {"iata": "STN", "name": "London Stansted Airport", "city": "London", "country": "GB"},
+  {"iata": "LGW", "name": "London Gatwick Airport", "city": "London", "country": "GB"},
+  {"iata": "LTN", "name": "London Luton Airport", "city": "London", "country": "GB"},
+  {"iata": "LCY", "name": "London City Airport", "city": "London", "country": "GB"},
+  {"iata": "SEN", "name": "London Southend Airport", "city": "London", "country": "GB"},
+  {"iata": "QQS", "name": "St Pancras International", "city": "London", "country": ""}],
+ "message": "Showing airports for 'London, United Kingdom', the best of 5 matching places."}
+
+fastflights - search_airports (MCP)(query: "Paris")
+{"matches": [
+  {"iata": "CDG", "name": "Aéroport de Paris-Charles de Gaulle", "city": "Paris", "country": "FR"},
+  {"iata": "ORY", "name": "Paris Orly Airport", "city": "Paris", "country": "FR"},
+  {"iata": "BVA", "name": "Paris Beauvais Airport", "city": "Paris", "country": "FR"},
+  {"iata": "XHP", "name": "Gare de l'Est", "city": "Paris", "country": ""},
+  {"iata": "XPG", "name": "Gare du Nord", "city": "Paris", "country": ""}],
+ "message": "Showing airports for 'Paris, France', the best of 5 matching places."}
+
+fastflights - search_multi_city (MCP)(legs: [
+  {"origin": ["JFK","LGA","EWR"], "destination": ["LHR","STN","LGW","LTN","LCY","SEN"], "depart_date": "2027-03-10"},
+  {"origin": ["LHR","STN","LGW","LTN","LCY","SEN"], "destination": ["CDG","ORY","BVA"], "depart_date": "2027-03-14"},
+  {"origin": ["CDG","ORY","BVA"], "destination": ["JFK","LGA","EWR"], "depart_date": "2027-03-20"}],
+  cabin: "economy", adults: 1)
+fetched_at: 2026-11-24T06:15:50Z   cache_hit: false   budget: null   strict_budget: false
+message: "Airport change: arrive LHR, depart SEN. The traveler arranges the transfer between these
+  airports. Not exhaustive: the upstream request limit and search width stopped the search early,
+  so better trips may exist."
+recommended_id: fl_d0f4500dcdcb2f2a   within_budget_found: null
+results (5, each with 3 legs; legs 1 and 2 are the same in all five):
+  leg 1 (all five): EWR->LHR  2027-03-10T19:35-05:00 -> 2027-03-11T10:50+00:00  615 min, 1 stop
+        Icelandair FI 622 EWR->KEF + FI 450 KEF->LHR
+  leg 2 (all five): SEN->CDG  2027-03-14T15:55+00:00 -> 2027-03-14T18:05+01:00  70 min, nonstop
+        easyJet U2 5711
+  leg 3 (differs):
+    fl_d0f4500dcdcb2f2a  $810  CDG->JFK  2027-03-20T14:40+01:00 -> 18:15-04:00  515 min  Delta DL 267
+        total 1200 min, 1 stop; recommendation_reasons: "1 stop(s) in total",
+        "Total travel time 20h 00m", "810 USD per person"
+    fl_215693ed0aa1ba5e  $811  CDG->JFK  2027-03-20T20:30+01:00 -> 23:45-04:00  495 min  Air France AF 12   (1200 min)
+    fl_ea0c609d4597398d  $811  CDG->JFK  2027-03-20T16:30+01:00 -> 20:05-04:00  515 min  Air France AF 8    (1200 min)
+    fl_701095ff0de26ae3  $841  CDG->EWR  2027-03-20T12:20+01:00 -> 15:45-04:00  505 min  Air France AF 70   (1190 min)
+    fl_30cbb99443fdb103  $845  CDG->JFK  2027-03-20T13:30+01:00 -> 17:00-04:00  510 min  Air France AF 6    (1195 min)
+Each result and each leg also carries a google_flights_url (about 1 KB of text each, repeated),
+  separate_tickets null, budget_status "not_specified", budget_overage null.
