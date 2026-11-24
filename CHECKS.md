@@ -178,6 +178,52 @@
   branch was dead; Claude Code calling the tool (no model session yet); customization (not
   implemented).
 
+### `search_multi_city`: refill of dead branches and multi-city timeouts (2026-11-24)
+
+- Why: two live runs of the tool (entry above) showed an empty search and a 20 s timeout. A
+  timing run on Chicago (ORD) to Madrid (MAD) to Rome (FCO, CIA) to Chicago, 2027-04-12, 04-16
+  and 04-22, with the timeout raised to 60 s, took 59.7 s over 7 requests: 9.3, 9.4, 5.2, **28.7**,
+  2.6, 2.1 and 2.2 s. All three last-step requests (1 KB each) were the recorded "no results"
+  error, so the search found no trip after 7 of its 10 requests. With the 8 requests of the first run, the
+  15 timed requests ran from 1.9 to 28.7 s, plus one timeout above 20 s. Cost: 7 billed requests.
+- Plan: `search_multi_city.plan.md`, Amendment 1 (#27). Tests first (#28: 12 failing, 7 guarding),
+  then this implementation in `src/fastflights_mcp/provider.py` only
+  (`fetch_multi_city_candidates`, `_clock`, `_DeadlineReached`, the two new constants).
+- Command: `python3 -m pytest tests -q`. Before: 311 passed, 12 failed, 84 errors (Patrick's
+  baselines). Actual result now: **323 passed, 84 errors**.
+- Draft check: the implementation was first drafted outside the repo while writing the tests;
+  against it all 19 new tests agreed with the plan. It caught one gap in the draft (a timed-out
+  branch did not mark the result not exhaustive), fixed before this change.
+- Mutation check: the code was deliberately broken in 14 ways (refill off, spare ignoring later
+  stages, deadline off, deadline measured from the absolute clock, deadline 240 s, timeout
+  fatal, all-timeout not raised, request timeout back to 20 s, a timeout not marking the result
+  incomplete, unexpanded partials not reported, a dead branch counted as live, the timeout logged
+  with its text, a stage never satisfied, the client keeping the 20 s timeout). The tests caught all 14.
+- **Live re-run (Gabriel approved; same Chicago to Madrid to Rome to Chicago search, the real 45 s
+  timeout and 2-minute deadline, called through the in-memory `Client` with the real adapter):**
+  - 8 requests in 109.0 s. Seconds and options: 7.8 (12), 8.8 (23), 6.8 (23), **45.0 timeout**, 15.7 (8),
+    12.4 (4), 4.7 (4), 7.6 (5). The timed-out branch (request 4) was skipped and refilled by
+    request 5. The search then expanded "4 of 12" and "3 of 54" partial trips, so the result
+    said it was not exhaustive.
+  - Result: **5 complete trips, 790 to 901 USD per person**, all nonstop on every leg, 1270 to 1290
+    minutes of travel, no airport changes. The recommended one, 790 USD: ORD-MAD AA 126
+    (2027-04-12 18:15), MAD-FCO W4 6206 (04-16 22:35), FCO-ORD AA 111 (04-22 10:00). Before refill
+    the same search returned nothing.
+  - Cost: at most 8 billed requests (the timed-out one may not be billed), under $0.04. The key is
+    absent from the output.
+- **Finding: the earlier "dead branches" were not tied to low-cost carriers.** The branch that
+  contained W4 6206 (Wizz Air), one of the flights in the earlier all-dead run, was live this time and
+  is in the recommended trip. The earlier dead branches may therefore have been transient, which
+  refill helps with but does not explain. The link to carriers was a guess from two cases and is not
+  supported.
+- **Finding: 45 s is not a ceiling.** One chained request ran into the 45 s timeout (earlier runs
+  topped out at 28.7 s), and the whole 3-leg search took 109 s of the 120 s deadline. Requests were
+  slower than in the earlier run (15.7 s and 12.4 s for small responses), so latency varies from run
+  to run. What bounds a search is the deadline, not the per-request timeout.
+- **Not verified:** that 120 s is acceptable to a host (Claude Code's tool-call limit is not
+  checked here); running a step's requests in parallel is not implemented and SearchApi's rate
+  limits are unchecked; the 45 s and 120 s values rest on 23 timed requests from two evenings.
+
 ### `search_airports`: API key kept out of URLs and logs (2026-11-23)
 
 - Found while reviewing PR #11 (Nadia's tool, merged 2026-11-23): `_location_search` sent
