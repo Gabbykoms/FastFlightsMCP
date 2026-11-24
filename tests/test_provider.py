@@ -54,6 +54,29 @@ fastflights_mcp.provider
       branch is dead the result is empty. Any other `error` body is UPSTREAM_DATA_ERROR.
 fastflights_mcp.server.fetch_multi_city_candidates delegates to the provider.
 
+Refill and timeouts (the last section of this file; search_multi_city.plan.md, Amendment 1)
+-----------------------------------------------------------------------------------------
+fastflights_mcp.provider
+  MULTI_CITY_REQUEST_TIMEOUT_SECONDS = 45   per-request timeout of the multi-city client;
+                                            REQUEST_TIMEOUT_SECONDS (20) is unchanged
+  MULTI_CITY_DEADLINE_SECONDS = 120         per call, measured from its start
+  _clock() -> float                         monotonic seconds; test hook for the deadline
+  Refill: at each expansion stage the ranked partial trips are expanded in order until
+      `width` of them are live (a live branch gives at least one usable continuation, or at
+      the last step at least one candidate), the partials run out, or the spare budget is
+      spent. Spare = MAX_REQUESTS_PER_CALL - used - width x (expansion stages after this
+      one) - width; that is 6, 3, 0, 1 and 4 at the first stage for 2, 3, 4, 5 and 6 legs.
+      A refill never takes requests a later stage needs for its own `width` branches.
+  A branch whose request times out (httpx.TimeoutException) counts as a request and is dead.
+      When the search ends with no candidates and at least one branch timed out, the timeout
+      is raised; with candidates they are returned. Other HTTP and transport errors still
+      propagate. Nothing about the request or its URL is logged beyond the exception class.
+  Deadline: before each request, if MULTI_CITY_DEADLINE_SECONDS have passed since the call
+      began, no request is sent; the complete trips found so far (possibly none) are returned
+      and `exhaustive` is False.
+  `exhaustive` is False whenever a partial trip was left unexpanded, the cap was reached or
+      the deadline stopped the search.
+
 Pricing: SearchApi's `price` is the party total. For adults-only parties the candidate's
 price_per_person is price / adults. Parties with children or infants are deliberately
 not specified here; that decision is still open. Recorded evidence: with one child, four
@@ -1151,3 +1174,207 @@ async def test_the_server_hook_delegates_to_the_provider(provider, server, api, 
     api.respond = recorded_chain
     result = await server.fetch_multi_city_candidates(**mc_query)
     assert len(result) == 16
+
+
+# --- Group 7: multi-city refill, timeouts and the call deadline -----------------------------
+
+def head(token):
+    """The "t<step>.<index>" part of a synthetic token."""
+    return token.split(":")[0]
+
+
+def heads(api, step):
+    return [head(t) for t in step_tokens(api, step)]
+
+
+def dead_where(inner, is_dead):
+    """Synthetic: answer with the recorded "no results" error for chosen follow-up tokens."""
+    def respond(request):
+        token = request.url.params.get("departure_token")
+        if token is not None and is_dead(token):
+            return ok(load("multi_city_leg3_no_results"))
+        return inner(request)
+    return respond
+
+
+def failing_where(inner, is_bad, make_response):
+    """Synthetic: for chosen follow-up tokens, raise (or return) what `make_response` gives."""
+    def respond(request):
+        token = request.url.params.get("departure_token")
+        if token is not None and is_bad(token):
+            return make_response(request)
+        return inner(request)
+    return respond
+
+
+def timeout(request):
+    raise httpx.ReadTimeout("synthetic timeout")
+
+
+async def test_a_dead_branch_is_replaced_by_the_next_ranked_partial_trip(provider, api, mc_query):
+    """3 legs, spare 3 at the last stage: the three best step-2 partials (index 0 under each
+    parent) are dead, so the next three (index 1) are expanded in their place."""
+    api.respond = dead_where(synthetic_chain(flat_levels(3, per_step=6)),
+                             lambda t: head(t) == "t1.0")
+    result = await provider.fetch_multi_city_candidates(**flat_query(mc_query, 3))
+    assert heads(api, 3) == ["t1.0"] * 3 + ["t1.1"] * 3
+    assert len(api.requests) == result.requests_used == provider.MAX_REQUESTS_PER_CALL
+    assert len(result) == 3 * 6 and result.exhaustive is False
+
+
+async def test_refill_stops_as_soon_as_enough_branches_are_live(provider, api, mc_query):
+    """2 legs, spare 6: one dead branch costs one extra request, not all the spare."""
+    api.respond = dead_where(synthetic_chain(flat_levels(2, per_step=6)), lambda t: head(t) == "t0.0")
+    result = await provider.fetch_multi_city_candidates(**flat_query(mc_query, 2))
+    assert heads(api, 2) == ["t0.0", "t0.1", "t0.2", "t0.3"]
+    assert len(api.requests) == result.requests_used == 5
+    assert len(result) == 3 * 6 and result.exhaustive is False   # two partial trips never expanded
+
+
+async def test_with_no_spare_a_dead_branch_is_not_replaced(provider, api, mc_query):
+    """4 legs use all 10 requests (spare 0): replacing a dead branch would starve a later step."""
+    api.respond = dead_where(synthetic_chain(flat_levels(4)), lambda t: head(t) == "t0.0")
+    result = await provider.fetch_multi_city_candidates(**flat_query(mc_query, 4))
+    assert heads(api, 2) == ["t0.0", "t0.1", "t0.2"]
+    assert len(api.requests) == result.requests_used == 10
+    assert len(result) > 0
+
+
+async def test_five_legs_have_one_spare_request(provider, api, mc_query):
+    api.respond = dead_where(synthetic_chain(flat_levels(5)), lambda t: head(t) == "t0.0")
+    result = await provider.fetch_multi_city_candidates(**flat_query(mc_query, 5))
+    assert heads(api, 2) == ["t0.0", "t0.1", "t0.2"]     # width 2, one spare
+    assert len(api.requests) == result.requests_used == 10 and len(result) > 0
+
+
+async def test_six_legs_have_four_spare_requests(provider, api, mc_query):
+    api.respond = dead_where(synthetic_chain(flat_levels(6)),
+                             lambda t: head(t) in ("t0.0", "t0.1", "t0.2"))
+    result = await provider.fetch_multi_city_candidates(**flat_query(mc_query, 6))
+    assert heads(api, 2) == ["t0.0", "t0.1", "t0.2", "t0.3"]   # width 1; the fourth is live
+    assert len(api.requests) == result.requests_used == 1 + 4 + 4 and len(result) > 0
+
+
+async def test_every_branch_dead_tries_them_all_and_is_still_complete(provider, api, mc_query):
+    """Nothing was left unexpanded, so the empty result is not flagged as incomplete."""
+    api.respond = dead_where(synthetic_chain(flat_levels(2, per_step=4)), lambda t: True)
+    result = await provider.fetch_multi_city_candidates(**flat_query(mc_query, 2))
+    assert heads(api, 2) == ["t0.0", "t0.1", "t0.2", "t0.3"]
+    assert result == [] and result.exhaustive is True and result.requests_used == 5
+
+
+async def test_dead_branches_never_push_the_search_past_the_cap(provider, api, mc_query):
+    api.respond = dead_where(synthetic_chain(flat_levels(3, per_step=9)), lambda t: True)
+    result = await provider.fetch_multi_city_candidates(**flat_query(mc_query, 3))
+    assert len(api.requests) <= provider.MAX_REQUESTS_PER_CALL
+    assert result == [] and result.exhaustive is False
+
+
+# timeouts ------------------------------------------------------------------------------------
+
+async def test_a_branch_that_times_out_is_skipped_and_replaced(provider, api, mc_query, caplog):
+    api.respond = failing_where(synthetic_chain(flat_levels(3)), lambda t: head(t) == "t0.1", timeout)
+    result = await provider.fetch_multi_city_candidates(**flat_query(mc_query, 3))
+    assert heads(api, 2) == ["t0.0", "t0.1", "t0.2", "t0.3"]
+    assert len(result) > 0 and result.exhaustive is False
+    assert len(api.requests) == result.requests_used
+
+
+async def test_a_timeout_on_the_last_step_keeps_the_other_branches(provider, api, mc_query):
+    api.respond = failing_where(synthetic_chain(flat_levels(2, per_step=3)),
+                                lambda t: head(t) == "t0.0", timeout)
+    result = await provider.fetch_multi_city_candidates(**flat_query(mc_query, 2))
+    assert len(result) == 2 * 3 and result.exhaustive is False
+    assert not any(c["legs"][0]["segments"][0]["flight_number"].startswith("S000") for c in result)
+
+
+async def test_when_every_branch_times_out_the_timeout_is_raised(provider, api, mc_query):
+    api.respond = failing_where(synthetic_chain(flat_levels(3)), lambda t: True, timeout)
+    with pytest.raises(httpx.TimeoutException):
+        await provider.fetch_multi_city_candidates(**flat_query(mc_query, 3))
+    assert len(api.requests) <= provider.MAX_REQUESTS_PER_CALL
+
+
+async def test_a_first_request_timeout_is_raised(provider, api, mc_query):
+    api.respond = timeout
+    with pytest.raises(httpx.TimeoutException):
+        await provider.fetch_multi_city_candidates(**mc_query)
+    assert len(api.requests) == 1
+
+
+@pytest.mark.parametrize("code", [401, 429])
+async def test_other_errors_on_a_branch_still_end_the_search(provider, api, mc_query, code):
+    api.respond = failing_where(synthetic_chain(flat_levels(3)), lambda t: head(t) == "t0.0",
+                                lambda request: httpx.Response(code, json={"error": "synthetic"}))
+    with pytest.raises(httpx.HTTPStatusError):
+        await provider.fetch_multi_city_candidates(**flat_query(mc_query, 3))
+
+
+async def test_a_timeout_logs_only_its_class(provider, api, mc_query, caplog):
+    secret = "synthetic-secret-do-not-log"
+
+    def leaky(request):
+        raise httpx.ReadTimeout(f"timeout https://www.searchapi.io/api/v1/search?api_key={secret}")
+
+    api.respond = failing_where(synthetic_chain(flat_levels(2, per_step=3)),
+                                lambda t: head(t) == "t0.0", leaky)
+    with caplog.at_level(logging.DEBUG):
+        await provider.fetch_multi_city_candidates(**flat_query(mc_query, 2))
+    assert secret not in caplog.text and "api_key=" not in caplog.text
+
+
+async def test_multi_city_requests_use_the_longer_timeout_and_other_searches_do_not(
+        provider, api, mc_query, query):
+    assert provider.MULTI_CITY_REQUEST_TIMEOUT_SECONDS == 45
+    assert provider.REQUEST_TIMEOUT_SECONDS == 20
+    api.respond = synthetic_chain(flat_levels(2, per_step=1))
+    await provider.fetch_multi_city_candidates(**flat_query(mc_query, 2))
+    assert {r.extensions["timeout"]["read"] for r in api.requests} == {45.0}
+    api.requests.clear()
+    api.respond = fixture_respond
+    await provider.fetch_flight_candidates(**query)
+    assert {r.extensions["timeout"]["read"] for r in api.requests} == {20.0}
+
+
+# deadline ------------------------------------------------------------------------------------
+
+@pytest.fixture
+def clock(provider, monkeypatch):
+    now = [1000.0]
+    monkeypatch.setattr(provider, "_clock", lambda: now[0], raising=False)
+    return now
+
+
+def slow(inner, clock, seconds):
+    def respond(request):
+        clock[0] += seconds
+        return inner(request)
+    return respond
+
+
+def test_the_deadline_is_two_minutes(provider):
+    assert provider.MULTI_CITY_DEADLINE_SECONDS == 120
+
+
+async def test_no_request_starts_after_the_deadline_and_trips_found_are_returned(
+        provider, api, mc_query, clock):
+    """Each request takes 50 s: the third starts at 100 s, a fourth would start at 150 s."""
+    api.respond = slow(synthetic_chain(flat_levels(2, per_step=3)), clock, 50)
+    result = await provider.fetch_multi_city_candidates(**flat_query(mc_query, 2))
+    assert len(api.requests) == result.requests_used == 3
+    assert len(result) == 2 * 3 and result.exhaustive is False
+
+
+async def test_a_deadline_before_any_complete_trip_returns_an_empty_incomplete_result(
+        provider, api, mc_query, clock):
+    api.respond = slow(synthetic_chain(flat_levels(3)), clock, 50)
+    result = await provider.fetch_multi_city_candidates(**flat_query(mc_query, 3))
+    assert len(api.requests) == result.requests_used == 3
+    assert result == [] and result.exhaustive is False
+
+
+async def test_the_deadline_is_measured_from_the_start_of_the_call(provider, api, mc_query, clock):
+    clock[0] = 5_000_000.0     # a large absolute reading must not count as elapsed time
+    api.respond = slow(synthetic_chain(flat_levels(2, per_step=3)), clock, 1)
+    result = await provider.fetch_multi_city_candidates(**flat_query(mc_query, 2))
+    assert len(api.requests) == 4 and result.exhaustive is True
