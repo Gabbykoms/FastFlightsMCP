@@ -227,24 +227,34 @@
 ### `search_multi_city`: Claude Code session (2026-11-24)
 
 - Transcript: `transcripts/week09-claude-code-multi-city.txt` (plain `claude`, Claude Enterprise, a
-  fresh session on `main` at `ef6e45d` after #29, `/mcp` reconnected to `fastflights`). Scanned
-  for the key and token patterns: none, and no `env.local` line was selected. The export has the
-  tool calls collapsed ("Called fastflights 4 times"); that is probably three `search_airports`
-  calls and one `search_multi_city`, but the file does not show it.
+  fresh session on `main` at `ef6e45d` after #29, `/mcp` reconnected to `fastflights`), and the
+  same session's tool calls expanded in `transcripts/week09-claude-code-multi-city-expanded-tool-calls.txt`
+  (copied in by hand and condensed; the header says so). Scanned for the key and token patterns:
+  none, and no `env.local` line was selected.
 - Prompt: cheapest economy trip for 1 adult, New York to London on 2027-03-10, London to Paris on
-  03-14, Paris back to New York on 03-20. The model said it would resolve the airports first, in
-  parallel, then searched. **The whole answer took 1 minute 41 seconds and Claude Code waited for it.**
-- What the model reported: $810 per person, 1 stop in total, Icelandair FI 622 + FI 450 EWR to LHR,
-  easyJet U2 5711 SEN to CDG, Delta DL 267 CDG to JFK. It passed on the tool's airport-change
-  note (arrive Heathrow, depart Southend, the traveler arranges the transfer) and the "not
-  exhaustive" note, and offered to re-search from Heathrow only. It also said all five results had that
-  Heathrow-in, Southend-out pattern; the collapsed calls do not let us confirm that.
-- Finding: Southend (SEN) counts as the same city as Heathrow under the rule in `places.same_city`
-  (same country, at most 100 km apart): `airportsdata` labels it "Southend", and it is 81 km from
-  LHR. The 24-hour gap rule was met (days between the legs), and the change was disclosed. Whether 100 km is
-  the right radius for a London traveler is a product decision, not a bug.
-- Not recorded: the number of billed requests (not in the transcript; a 3-leg search uses 7 to 10);
-  the expanded tool calls and prices of the other four results.
+  03-14, Paris back to New York on 03-20. The model called `search_airports` for "New York",
+  "London" and "Paris", then `search_multi_city` once with the airports it got (it dropped the train
+  stations, see below). **The whole answer took 1 minute 41 seconds and Claude Code waited for it.**
+- Result: 5 complete trips, $810 to $845 per person, 1 stop each. The recommended one, $810: Icelandair
+  FI 622 + FI 450 EWR to LHR, easyJet U2 5711 SEN to CDG, Delta DL 267 CDG to JFK. The tool's message
+  disclosed the airport change (arrive LHR, depart SEN) and that the search was not exhaustive; the
+  model passed both on and offered to re-search from Heathrow only. The 24-hour rule was met (3 days
+  between the legs). Billed requests: not recorded (a 3-leg search uses 7 to 10).
+- Finding: **the five results are one trip with five different return flights.** Legs 1 and 2 are
+  identical in all five; only the Paris to New York flight differs. A traveler asking for options
+  gets almost none for the first two legs. This is the beam's concentration noted in #29, now seen in
+  a model session.
+- Finding: Southend (SEN) counts as the same city as Heathrow. Google's Location Search itself lists
+  "London Southend Airport" under London, and `places.same_city` accepts it (same country, 81 km from LHR;
+  `airportsdata` labels it "Southend"). The model's "about 65 miles" was its own figure, not the tool's
+  (81 km is about 50 miles). Whether 100 km is the right radius is a product decision, not a bug.
+- Finding for `search_airports` (Nadia's tool, issue #19): the London lookup returned "QQS St Pancras
+  International" and the Paris lookup "XHP Gare de l'Est" and "XPG Gare du Nord", rail stations with an
+  empty `country`, mixed in with airports. The model left them out of the flight search, but nothing
+  in the tool result marks them as non-airports.
+- Finding: the result text is large (each of 5 trips repeats a long Google Flights link for the trip
+  and each leg), which costs the model tokens. Not changed.
+- Not recorded: the request count and the cost of this session.
 
 ### `search_airports`: API key kept out of URLs and logs (2026-11-23)
 
