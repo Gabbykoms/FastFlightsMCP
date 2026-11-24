@@ -321,8 +321,17 @@ provider behavior (`tests/fixtures/searchapi/README.md`, "Multi-city"):
   time. That is 4, 7, 10, 9 and 6 requests for 2, 3, 4, 5 and 6 legs. Whenever a partial trip
   was left out, or the cap was reached, the result says it is not exhaustive.
 - A token can lead nowhere: HTTP 200 with the `error` "Google Flights didn't return any
-  results." That exact text is a skipped branch; every other `error` body is
-  `UPSTREAM_DATA_ERROR`.
+  results." That exact text is a dead branch; every other `error` body is
+  `UPSTREAM_DATA_ERROR`. A dead branch, and a branch whose request times out, is replaced by the
+  next-ranked partial trip while the spare request budget allows (at the first stage: 6, 3, 0, 1
+  and 4 spare requests for 2, 3, 4, 5 and 6 legs); the spare never takes requests a later stage
+  needs. Measured 2026-11-24: a search with all three kept branches dead returned nothing after
+  7 of 10 requests, which is why refill exists.
+- Timeouts for this tool: 45 seconds per request (chained requests took 1.9 to 28.7 s in 15
+  samples from one evening, and one passed 20 s) and a 2-minute deadline per call; after the
+  deadline no request starts and the result is not exhaustive. One-way and round-trip searches keep
+  20 seconds. A search that ends with no trip and at least one timed-out branch fails with
+  `UPSTREAM_TIMEOUT`; with trips it returns them as not exhaustive.
 - Same city (`fastflights_mcp.places.same_city`): same country, and either the same
   `airportsdata` city name and subdivision or at most 100 km apart. Every airport of a leg's
   destination set must be in the same city as every airport of the next leg's origin set, and

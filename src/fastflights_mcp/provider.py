@@ -21,12 +21,18 @@ Maintenance guide
 * Multi-city is a chain of one request per leg. Each response lists the options for that one
   leg, and an option's `departure_token` selects it for the next request; the last leg's
   options carry the whole-trip `price`. Trying every combination would cost far more than
-  MAX_REQUESTS_PER_CALL, so only the best MULTI_CITY_BEAM partial trips are continued at
-  each step (ranked by projected price, then travel time) and the result says when anything
-  was left out. A token can lead nowhere: SearchApi then answers HTTP 200 with the `error`
-  "Google Flights didn't return any results." (recorded in
-  tests/fixtures/searchapi/multi_city_leg3_no_results.json). That branch is skipped; any other
-  `error` body is still UPSTREAM_DATA_ERROR.
+  MAX_REQUESTS_PER_CALL, so each stage expands the best partial trips (ranked by projected
+  price, then travel time) until MULTI_CITY_BEAM of them are live, and the result says when
+  anything was left out. A token can lead nowhere: SearchApi then answers HTTP 200 with the
+  `error` "Google Flights didn't return any results." (recorded in
+  tests/fixtures/searchapi/multi_city_leg3_no_results.json). Such a dead branch, and one whose
+  request times out, is replaced by the next-ranked partial trip while the spare request budget
+  allows; the spare never takes requests a later stage needs. Any other `error` body is still
+  UPSTREAM_DATA_ERROR and other HTTP errors still end the search.
+* Multi-city requests use their own timeout (MULTI_CITY_REQUEST_TIMEOUT_SECONDS) because chained
+  requests were measured at up to 28.7 s, and the whole call stops starting requests after
+  MULTI_CITY_DEADLINE_SECONDS. Both numbers come from 15 timed requests; re-measure before
+  tightening them.
 * HTTP and transport failures propagate as httpx exceptions; the tool maps them to
   UPSTREAM_* categories. This module raises ToolError only for CONFIGURATION_ERROR,
   UPSTREAM_DATA_ERROR and UNSUPPORTED_FILTER, and never puts provider text or the key in
@@ -41,6 +47,7 @@ import hashlib
 import json
 import logging
 import os
+import time
 from datetime import datetime, timedelta
 from typing import Any
 from zoneinfo import ZoneInfo
@@ -58,6 +65,8 @@ MAX_RETRIES = 1
 RETRY_DELAY_SECONDS = 1.0
 REQUEST_TIMEOUT_SECONDS = 20.0
 MULTI_CITY_BEAM = 3
+MULTI_CITY_REQUEST_TIMEOUT_SECONDS = 45.0  # chained requests were measured at up to 28.7 s
+MULTI_CITY_DEADLINE_SECONDS = 120.0
 AIRPORT_CHANGE_MIN_GAP = timedelta(hours=24)
 DEAD_BRANCH_ERROR = "Google Flights didn't return any results."
 TRAVEL_CLASS = {"economy": "economy", "premium_economy": "premium_economy",
@@ -68,6 +77,10 @@ _TRANSPORT: httpx.AsyncBaseTransport | None = None  # test hook: replaces the ne
 
 async def _sleep(seconds: float) -> None:  # test hook: lets tests skip the retry delay
     await asyncio.sleep(seconds)
+
+
+def _clock() -> float:  # test hook: lets tests move the multi-city deadline
+    return time.monotonic()
 
 
 class UnusableOption(ValueError):
@@ -85,6 +98,10 @@ class Candidates(list):
 
 class _CapReached(Exception):
     """The per-call request allowance is spent; no further request may be sent."""
+
+
+class _DeadlineReached(Exception):
+    """The multi-city call has used its time allowance; no further request may start."""
 
 
 class _Usage:
@@ -332,7 +349,14 @@ def _follows(previous: dict[str, Any], leg: dict[str, Any]) -> bool:
 
 
 async def fetch_multi_city_candidates(**query: Any) -> Candidates:
-    """Search a chain of 2 to 6 legs and return normalized, complete multi-city candidates."""
+    """Search a chain of 2 to 6 legs and return normalized, complete multi-city candidates.
+
+    Partial trips are expanded best first. A branch is *live* when its response gives at least
+    one usable continuation (at the last step, at least one candidate). A stage expands branches
+    until `width` are live; a dead branch (no results, nothing usable, or a timeout) is replaced
+    by the next-ranked partial trip while the spare request budget allows. The spare never takes
+    requests that a later stage needs for its own `width` branches.
+    """
     key = (os.environ.get("SEARCHAPI_API_KEY") or "").strip()
     if not key:
         raise ToolError("CONFIGURATION_ERROR: SEARCHAPI_API_KEY is not set on the server. "
@@ -340,19 +364,35 @@ async def fetch_multi_city_candidates(**query: Any) -> Candidates:
     requested, usage = query["legs"], _Usage()
     last = len(requested) - 1
     width = min(MULTI_CITY_BEAM, (MAX_REQUESTS_PER_CALL - 1) // last)
-    exhaustive, unusable = True, 0
+    exhaustive, unusable, timed_out = True, 0, None
     candidates: list[dict[str, Any]] = []
-    frontier: list[dict[str, Any] | None] = [None]  # partial trips to continue; None = nothing chosen yet
-    async with httpx.AsyncClient(transport=_TRANSPORT,
-                                 timeout=httpx.Timeout(REQUEST_TIMEOUT_SECONDS)) as client:
+    ranked: list[dict[str, Any] | None] = [None]  # partial trips to expand; None = nothing chosen yet
+    started = _clock()
+    timeout = httpx.Timeout(MULTI_CITY_REQUEST_TIMEOUT_SECONDS)
+    async with httpx.AsyncClient(transport=_TRANSPORT, timeout=timeout) as client:
         try:
             for step, spec in enumerate(requested):
+                needed = 1 if step == 0 else width
+                reserved = width * (last - step)  # requests the later stages need for themselves
                 partials: list[dict[str, Any]] = []
-                for parent in frontier:
-                    token = parent["token"] if parent else None
-                    body = await _request(client, key, _multi_city_params(query, token), usage,
-                                          dead_branch_ok=True)
-                    link = _link(body)
+                live = expanded = 0
+                for parent in ranked:
+                    if live >= needed:
+                        break
+                    if expanded >= needed and usage.used + 1 > MAX_REQUESTS_PER_CALL - reserved:
+                        break  # a refill would starve a later stage
+                    if _clock() - started >= MULTI_CITY_DEADLINE_SECONDS:
+                        raise _DeadlineReached
+                    expanded += 1
+                    try:
+                        body = await _request(client, key, _multi_city_params(
+                            query, parent["token"] if parent else None), usage, dead_branch_ok=True)
+                    except httpx.TimeoutException as exc:
+                        timed_out, exhaustive = exc, False  # a timed-out branch may hide trips
+                        logger.warning("A multi-city request timed out (%s); skipping that branch.",
+                                       type(exc).__name__)
+                        continue
+                    link, branch = _link(body), 0
                     for option in _options(body):
                         try:
                             leg = map_leg(option, link)
@@ -370,25 +410,32 @@ async def fetch_multi_city_candidates(**query: Any) -> Candidates:
                                 parent and not _follows(parent["legs"][-1], leg)):
                             continue
                         legs = (parent["legs"] if parent else []) + [leg]
+                        branch += 1
                         if step == last:
                             candidates.append(_candidate(legs, price, query, link))
                         else:
                             partials.append({"legs": legs, "token": next_token, "price": price,
                                              "minutes": sum(x["duration_minutes"] for x in legs),
                                              "id": _identify(legs)})
+                    live += bool(branch)
+                if expanded < len(ranked):  # a ranked partial trip was never expanded
+                    exhaustive = False
+                    logger.warning("Multi-city search expanded %d of %d partial trips.",
+                                   expanded, len(ranked))
                 if step == last:
                     break
                 partials.sort(key=lambda p: (p["price"], p["minutes"], p["id"]))
-                if len(partials) > width:
-                    exhaustive = False
-                    logger.warning("Multi-city search kept the best %d of %d partial trips.",
-                                   width, len(partials))
-                frontier = partials[:width]
-                if not frontier:
+                ranked = partials
+                if not ranked:
                     break
         except _CapReached:
             exhaustive = False
             logger.warning("Request limit reached; the search is not exhaustive.")
+        except _DeadlineReached:
+            exhaustive = False
+            logger.warning("Deadline reached; the search is not exhaustive.")
+    if timed_out is not None and not candidates:
+        raise timed_out
     if unusable and not candidates:
         raise _data_error("The provider returned results that could not be validated.")
     return Candidates(candidates, exhaustive=exhaustive, requests_used=usage.used)
