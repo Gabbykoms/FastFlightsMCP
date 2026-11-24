@@ -1,0 +1,26 @@
+ ▐▛███▛█   Claude Code v2.1.272
+▝▜██████▀  Sonnet 5 · Claude Enterprise
+  ▝▝ ▝▝    ~/Desktop/FastFlightsMCP
+
+
+❯ /mcp                                                                          
+  ⎿  Reconnected to fastflights.
+
+❯ Find the cheapest one-way economy flight from New York to Lisbon on           
+  2027-01-22 for 1 adult                                                        
+
+  Called fastflights 3 times (ctrl+o to expand)
+
+⏺ Cheapest option: $404 per person, tied across several TAP Air Portugal
+  nonstops — recommended one:
+
+  - TAP Air Portugal TP 202: EWR → LIS, nonstop, 6h45m
+  - Departs 2027-01-22 17:40 (EWR local), arrives 2027-01-23 05:25 (Lisbon
+    local)
+  - Economy, 1 adult, $404 USD
+
+  Other nonstops at the same $404 price: TP 204 (EWR, red-eye departing 00:10)
+  and TP 210 (JFK, 22:00 departure). Delta and United nonstops from JFK/EWR are
+  also available but cost $527.
+
+✻ Baked for 11s · done 11:35 PM
