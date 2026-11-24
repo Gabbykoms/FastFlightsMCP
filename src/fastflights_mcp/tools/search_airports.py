@@ -12,11 +12,13 @@ Two seams tests rely on:
                           the only function that calls SearchApi. Tests
                           monkeypatch this to fake the upstream.
 """
+import functools
 import logging
 import os
 import re
 from typing import Annotated, Optional
 
+import airportsdata
 import httpx
 from pydantic import BaseModel, Field
 
@@ -70,12 +72,53 @@ def _normalize_key(query: str) -> str:
     return re.sub(r"\s+", " ", query.strip()).casefold()
 
 
+_IATA_CODE = re.compile(r"^[A-Z]{3}$")
+
+
+@functools.lru_cache(maxsize=1)
+def _airport_table() -> dict:
+    return airportsdata.load("IATA")
+
+
+def _to_matches(locations: list) -> tuple[list[AirportMatch], str]:
+    """Airports of the best matching place, and that place's name.
+
+    SearchApi returns places (mostly cities, best match first), each with a nested
+    `airports` list; "New York" gives the city (JFK, LGA, EWR) and then four upstate
+    cities. Only the first place with usable airports is used, so a model never searches
+    Buffalo flights for a New York request. `country` is not in the response; it comes
+    from airportsdata. Duplicate and malformed codes are skipped. A non-empty response
+    with no readable airports is an upstream data error, never a blank success.
+    """
+    if not locations:
+        return [], ""
+    for location in locations:
+        airports = location.get("airports") if isinstance(location, dict) else None
+        matches: list[AirportMatch] = []
+        seen: set[str] = set()
+        for airport in airports if isinstance(airports, list) else []:
+            code = airport.get("airport_code") if isinstance(airport, dict) else None
+            if not isinstance(code, str) or not _IATA_CODE.match(code) or code in seen:
+                continue
+            seen.add(code)
+            matches.append(AirportMatch(
+                iata=code,
+                name=str(airport.get("title") or ""),
+                city=str(airport.get("city") or ""),
+                country=str(_airport_table().get(code, {}).get("country") or ""),
+            ))
+        if matches:
+            return matches[:_MAX_MATCHES], str(location.get("full_name") or "")
+    raise ToolError("UPSTREAM_DATA_ERROR: The provider's airport results could not be "
+                    "interpreted.")
+
+
 def _location_search(query: str) -> list[dict]:
     """Call SearchApi's google_flights_location_search engine.
 
-    NOTE: the field mapping below (iata/name/city/country) is unverified
-    until a real fixture is recorded. Sanitize and verify before promising
-    these field names to callers.
+    Returns SearchApi's raw `locations` list: places, each with a nested `airports`
+    list (recorded in tests/fixtures/searchapi/location_search_new_york.json).
+    `_to_matches` turns it into the tool's result.
     """
     api_key = os.environ.get("SEARCHAPI_API_KEY")
     if not api_key:
@@ -86,7 +129,7 @@ def _location_search(query: str) -> list[dict]:
         "https://www.searchapi.io/api/v1/search",
         params={
             "engine": "google_flights_location_search",
-            "query": query,
+            "q": query,
         },
         # The key goes in a header, never the URL: httpx logs URLs and puts them in
         # exception text.
@@ -95,8 +138,10 @@ def _location_search(query: str) -> list[dict]:
     )
     response.raise_for_status()
     payload = response.json()
-    locations = payload.get("locations") or payload.get("results") or []
-    return list(locations)
+    locations = payload.get("locations") if isinstance(payload, dict) else None
+    if not isinstance(locations, list):
+        raise ValueError("unexpected Location Search response shape")
+    return locations
 
 
 @mcp.tool(
@@ -159,17 +204,12 @@ async def search_airports(
             "server's SearchApi configuration."
         )
 
-    matches = [
-        AirportMatch(
-            iata=str(item.get("iata", "")),
-            name=str(item.get("name", "")),
-            city=str(item.get("city", "")),
-            country=str(item.get("country", "")),
-        )
-        for item in locations[:_MAX_MATCHES]
-    ]
+    # Raises ToolError(UPSTREAM_DATA_ERROR) for a shape it cannot read; nothing is cached.
+    matches, place_name = _to_matches(locations)
     if matches:
-        result = AirportSearchResult(matches=matches, message=None)
+        note = (f"Showing airports for {place_name!r}, the best of {len(locations)} "
+                "matching places." if len(locations) > 1 else None)
+        result = AirportSearchResult(matches=matches, message=note)
     else:
         result = AirportSearchResult(
             matches=[],
