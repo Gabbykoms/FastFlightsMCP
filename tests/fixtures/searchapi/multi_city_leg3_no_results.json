@@ -1,0 +1,29 @@
+{
+  "search_metadata": {
+    "id": "search_REDACTED",
+    "status": "Success",
+    "created_at": "2026-11-24T05:08:29Z",
+    "request_time_taken": 3.73,
+    "parsing_time_taken": 0.01,
+    "total_time_taken": 3.75,
+    "request_url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpaEgoyMDI3LTAxLTA1Ih8KA0VXUhIKMjAyNy0wMS0wNRoDTEhSKgJVQTIDMTIyagcIARIDSkZLagcIARIDRVdSagcIARIDTEdBcgcIARIDTEhScgcIARIDTEdXGlISCjIwMjctMDEtMDkiIAoDTEdXEgoyMDI3LTAxLTA5GgNDREcqAlUyMgQ4NDA1agcIARIDTEhSagcIARIDTEdXcgcIARIDQ0RHcgcIARIDT1JZGjkSCjIwMjctMDEtMTRqBwgBEgNDREdqBwgBEgNPUllyBwgBEgNKRktyBwgBEgNFV1JyBwgBEgNMR0FAAUgBcAGCAQsI____________AZgBAw&tfu=CmxDalJJWTFGU2JHMW1TVXhqVGtGQlFqZExlbmRDUnkwdExTMHRMUzB0TFMxNWJHUXlNVUZCUVVGQlIzTkdSemhyU25KaGN6QkJFZ1pWTWpnME1EVWFDd2pVb3dRUUFob0RWVk5FT0J4dzFLTUUSAggAIgMSATA&hl=en&gl=us&curr=USD",
+    "html_url": "https://www.searchapi.io/api/v1/searches/search_REDACTED.html",
+    "json_url": "https://www.searchapi.io/api/v1/searches/search_REDACTED"
+  },
+  "search_parameters": {
+    "engine": "google_flights",
+    "currency": "USD",
+    "hl": "en",
+    "gl": "us",
+    "flight_type": "multi_city",
+    "travel_class": "economy",
+    "stops": "any",
+    "adults": "1",
+    "children": "0",
+    "infants_in_seat": "0",
+    "infants_on_lap": "0",
+    "departure_token": "WyJDalJJWTFGU2JHMW1TVXhqVGtGQlFqZExlbmRDUnkwdExTMHRMUzB0TFMxNWJHUXlNVUZCUVVGQlIzTkdSemhyU25KaGN6QkJFZ1pWTWpnME1EVWFDd2pVb3dRUUFob0RWVk5FT0J4dzFLTUUiLFtbIkVXUiIsIjIwMjctMDEtMDUiLCJMSFIiLG51bGwsIlVBIiwiMTIyIl1dLFtbIkxHVyIsIjIwMjctMDEtMDkiLCJDREciLG51bGwsIlUyIiwiODQwNSJdXV0=",
+    "multi_city_json": "[{\"departure_id\": \"JFK,EWR,LGA\", \"arrival_id\": \"LHR,LGW\", \"outbound_date\": \"2027-01-05\"}, {\"departure_id\": \"LHR,LGW\", \"arrival_id\": \"CDG,ORY\", \"outbound_date\": \"2027-01-09\"}, {\"departure_id\": \"CDG,ORY\", \"arrival_id\": \"JFK,EWR,LGA\", \"outbound_date\": \"2027-01-14\"}]"
+  },
+  "error": "Google Flights didn't return any results."
+}
