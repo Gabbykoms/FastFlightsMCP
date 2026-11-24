@@ -224,6 +224,28 @@
   checked here); running a step's requests in parallel is not implemented and SearchApi's rate
   limits are unchecked; the 45 s and 120 s values rest on 23 timed requests from two evenings.
 
+### `search_multi_city`: Claude Code session (2026-11-24)
+
+- Transcript: `transcripts/week09-claude-code-multi-city.txt` (plain `claude`, Claude Enterprise, a
+  fresh session on `main` at `ef6e45d` after #29, `/mcp` reconnected to `fastflights`). Scanned
+  for the key and token patterns: none, and no `env.local` line was selected. The export has the
+  tool calls collapsed ("Called fastflights 4 times"); that is probably three `search_airports`
+  calls and one `search_multi_city`, but the file does not show it.
+- Prompt: cheapest economy trip for 1 adult, New York to London on 2027-03-10, London to Paris on
+  03-14, Paris back to New York on 03-20. The model said it would resolve the airports first, in
+  parallel, then searched. **The whole answer took 1 minute 41 seconds and Claude Code waited for it.**
+- What the model reported: $810 per person, 1 stop in total, Icelandair FI 622 + FI 450 EWR to LHR,
+  easyJet U2 5711 SEN to CDG, Delta DL 267 CDG to JFK. It passed on the tool's airport-change
+  note (arrive Heathrow, depart Southend, the traveler arranges the transfer) and the "not
+  exhaustive" note, and offered to re-search from Heathrow only. It also said all five results had that
+  Heathrow-in, Southend-out pattern; the collapsed calls do not let us confirm that.
+- Finding: Southend (SEN) counts as the same city as Heathrow under the rule in `places.same_city`
+  (same country, at most 100 km apart): `airportsdata` labels it "Southend", and it is 81 km from
+  LHR. The 24-hour gap rule was met (days between the legs), and the change was disclosed. Whether 100 km is
+  the right radius for a London traveler is a product decision, not a bug.
+- Not recorded: the number of billed requests (not in the transcript; a 3-leg search uses 7 to 10);
+  the expanded tool calls and prices of the other four results.
+
 ### `search_airports`: API key kept out of URLs and logs (2026-11-23)
 
 - Found while reviewing PR #11 (Nadia's tool, merged 2026-11-23): `_location_search` sent
