@@ -27,6 +27,33 @@ fastflights_mcp.server.fetch_flight_candidates delegates to the provider.
 The search_flights tool adds a message containing "exhaustive" when the result is
 not exhaustive.
 
+Multi-city (the last section of this file)
+------------------------------------------
+fastflights_mcp.provider
+  MULTI_CITY_BEAM = 3          most partial trips continued at each step
+  async fetch_multi_city_candidates(**query) -> Candidates
+      query: legs (2 to 6 dicts: origin, destination, depart_date, max_stops where
+      max_stops is the leg's effective limit, int or None), cabin, adults, children,
+      infants_in_seat, infants_on_lap, currency. Same key, errors and request cap as
+      fetch_flight_candidates.
+      One request per leg: flight_type=multi_city, multi_city_json = the legs as
+      {departure_id, arrival_id, outbound_date}, and from the second request on the
+      departure_token of the partial trip being continued. SearchApi answers with the
+      options for that one leg, so a complete candidate is assembled from the chosen
+      flights of every step, and its price is the last step's `price` (a whole-trip
+      total) divided by adults.
+      Beam: the partial trips are ranked by (price, travel minutes so far, id) and the
+      best min(MULTI_CITY_BEAM, (MAX_REQUESTS_PER_CALL - 1) // (legs - 1)) are continued.
+      Partial trips that break a rule are dropped before they are ranked: a leg outside
+      its airport sets or over its max_stops, a leg that departs before the previous leg
+      arrives (elapsed time, not clock readings), or a departure from a different airport
+      than the previous arrival less than 24 elapsed hours later.
+      `exhaustive` is False whenever a partial trip was pruned by the beam or the cap.
+      A body whose only content is the error "Google Flights didn't return any results."
+      is a dead branch: skipped, counted as a request, never an error by itself. When every
+      branch is dead the result is empty. Any other `error` body is UPSTREAM_DATA_ERROR.
+fastflights_mcp.server.fetch_multi_city_candidates delegates to the provider.
+
 Pricing: SearchApi's `price` is the party total. For adults-only parties the candidate's
 price_per_person is price / adults. Parties with children or infants are deliberately
 not specified here; that decision is still open. Recorded evidence: with one child, four
@@ -40,7 +67,9 @@ import logging
 import socket
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
+import airportsdata
 import httpx
 import pytest
 from mcp import Client
@@ -706,3 +735,418 @@ async def test_hitting_the_request_cap_is_reported_as_not_exhaustive(provider, s
     data = result.structured_content
     assert data["results"]
     assert "exhaustive" in (data["message"] or "").lower()
+
+
+# --- Group 6: multi-city -------------------------------------------------------------------
+
+DEAD_BRANCH = "Google Flights didn't return any results."
+AIRPORTS = airportsdata.load("IATA")
+NYC, LONDON, PARIS = ["JFK", "EWR", "LGA"], ["LHR", "LGW"], ["CDG", "ORY"]
+
+
+@pytest.fixture
+def mc_query():
+    def leg(origin, destination, depart_date):
+        return {"origin": origin, "destination": destination,
+                "depart_date": depart_date, "max_stops": None}
+    return {"legs": [leg(NYC, LONDON, "2027-01-05"), leg(LONDON, PARIS, "2027-01-09"),
+                     leg(PARIS, NYC, "2027-01-14")],
+            "cabin": "economy", "adults": 1, "children": 0, "infants_in_seat": 0,
+            "infants_on_lap": 0, "currency": "USD"}
+
+
+def by_number(response, number):
+    return next(o for o in options(response) if number in flight_numbers(o))
+
+
+def trimmed(response, *keep):
+    """Synthetic: a recorded response cut down to the options that have a recorded follow-up."""
+    return {**response, "best_flights": list(keep), "other_flights": []}
+
+
+def recorded_chain(request):
+    """Serve the recorded 3-leg chain. Only some options have a recorded follow-up, so the
+    recorded responses for leg 1 and leg 2 are cut down to those options (synthetic):
+    leg 1 keeps UA 122 (EWR-LHR); leg 2 keeps U2 8405 (LGW-CDG, a dead branch in the
+    recording) and VY 8058 (LHR-ORY, which has recorded leg-3 options)."""
+    token = request.url.params.get("departure_token")
+    leg1, leg2 = load("multi_city_leg1"), load("multi_city_leg2")
+    ua122 = by_number(leg1, "UA 122")
+    dead, live = by_number(leg2, "U2 8405"), by_number(leg2, "VY 8058")
+    if token is None:
+        return ok(trimmed(leg1, ua122))
+    if token == ua122["departure_token"]:
+        return ok(trimmed(leg2, dead, live))
+    if token == live["departure_token"]:
+        return ok(load("multi_city_leg3"))
+    if token == dead["departure_token"]:
+        return ok(load("multi_city_leg3_no_results"))
+    raise AssertionError("a token the recordings do not cover was requested")
+
+
+def synthetic_option(origin, destination, departs, minutes=400, price=500, stops=0, number="SY100"):
+    """Synthetic SearchApi option; `departs` is an aware UTC datetime, local times are derived."""
+    def point(code, moment):
+        local = moment.astimezone(ZoneInfo(AIRPORTS[code]["tz"]))
+        return {"name": code, "id": code, "date": local.date().isoformat(),
+                "time": local.strftime("%H:%M")}
+    hubs = ["KEF"] * stops
+    codes = [origin, *hubs, destination]
+    flying = (minutes - 60 * stops) // (stops + 1)
+    flights, start = [], departs
+    for i in range(stops + 1):
+        end = start + timedelta(minutes=flying)
+        flights.append({"departure_airport": point(codes[i], start),
+                        "arrival_airport": point(codes[i + 1], end), "duration": flying,
+                        "airline": "Synth Air", "flight_number": f"{number[:-1]}{i}"})
+        start = end + timedelta(minutes=60)
+    return {"flights": flights, "total_duration": minutes, "price": price, "type": "Multi city"}
+
+
+def utc(text):
+    return datetime.fromisoformat(text).replace(tzinfo=timezone.utc)
+
+
+def synthetic_chain(levels):
+    """Synthetic SearchApi: `levels[k]` is the list of options answering step k. Every option
+    but the last step's gets a departure_token "t<k>.<index>:<parent>", unique per parent;
+    the last step's options get a booking_token."""
+    def respond(request):
+        token = request.url.params.get("departure_token")
+        step = 0 if token is None else int(token[1:token.index(".")]) + 1
+        shown = []
+        for i, option in enumerate(levels[step]):
+            option = copy.deepcopy(option)
+            if step < len(levels) - 1:
+                option["departure_token"] = f"t{step}.{i}:{token or ''}"
+            else:
+                option["booking_token"] = f"b{i}"
+            shown.append(option)
+        return ok({"search_metadata": {}, "best_flights": [], "other_flights": shown})
+    return respond
+
+
+ROUTE = ["JFK", "LHR", "CDG", "FCO", "MAD", "LIS", "JFK"]
+
+
+def flat_levels(count, per_step=5):
+    """Synthetic: `count` steps along ROUTE, `per_step` options each, option i priced 500 + 10 i."""
+    return [[synthetic_option(ROUTE[k], ROUTE[k + 1], utc("2027-01-05T09:00") + timedelta(days=3 * k),
+                              minutes=480, price=500 + 10 * i, number=f"S{k}{i:02d}0")
+             for i in range(per_step)] for k in range(count)]
+
+
+def flat_query(mc_query, count):
+    legs = [{"origin": [ROUTE[k]], "destination": [ROUTE[k + 1]],
+             "depart_date": f"2027-01-{5 + 3 * k:02d}", "max_stops": None} for k in range(count)]
+    return {**mc_query, "legs": legs}
+
+
+def step_tokens(api, step):
+    """Departure tokens of the requests that answered step `step` (1-based), in order."""
+    return [r.url.params["departure_token"] for r in api.requests
+            if r.url.params.get("departure_token", "").startswith(f"t{step - 1}.")]
+
+
+async def test_multi_city_request_parameters(provider, api, mc_query):
+    api.respond = recorded_chain
+    await provider.fetch_multi_city_candidates(**mc_query)
+    first = api.requests[0]
+    assert (first.url.host, first.url.path) == ("www.searchapi.io", "/api/v1/search")
+    params = dict(first.url.params)
+    legs = json.loads(params.pop("multi_city_json"))
+    assert legs == [{"departure_id": "JFK,EWR,LGA", "arrival_id": "LHR,LGW", "outbound_date": "2027-01-05"},
+                    {"departure_id": "LHR,LGW", "arrival_id": "CDG,ORY", "outbound_date": "2027-01-09"},
+                    {"departure_id": "CDG,ORY", "arrival_id": "JFK,EWR,LGA", "outbound_date": "2027-01-14"}]
+    assert params == {"engine": "google_flights", "flight_type": "multi_city",
+                      "travel_class": "economy", "adults": "1", "children": "0",
+                      "infants_in_seat": "0", "infants_on_lap": "0", "currency": "USD"}
+    assert KEY not in str(first.url)
+    assert first.headers["Authorization"] == f"Bearer {KEY}"
+
+
+async def test_multi_city_every_passenger_count_and_cabin_are_sent(provider, api, mc_query):
+    api.respond = lambda request: ok(load("multi_city_leg3_no_results"))
+    await provider.fetch_multi_city_candidates(
+        **{**mc_query, "cabin": "first", "adults": 2, "children": 1, "infants_in_seat": 1,
+           "infants_on_lap": 1, "currency": "EUR"})
+    params = api.requests[0].url.params
+    assert (params["travel_class"], params["adults"], params["children"],
+            params["infants_in_seat"], params["infants_on_lap"], params["currency"]) == (
+        "first_class", "2", "1", "1", "1", "EUR")
+
+
+async def test_recorded_chain_follows_the_tokens_one_step_at_a_time(provider, api, mc_query):
+    api.respond = recorded_chain
+    leg1, leg2 = load("multi_city_leg1"), load("multi_city_leg2")
+    ua122 = by_number(leg1, "UA 122")["departure_token"]
+    live, dead = (by_number(leg2, n)["departure_token"] for n in ("VY 8058", "U2 8405"))
+    await provider.fetch_multi_city_candidates(**mc_query)
+    first, second, *last = api.requests
+    assert "departure_token" not in first.url.params
+    assert second.url.params["departure_token"] == ua122
+    assert sorted(r.url.params["departure_token"] for r in last) == sorted([live, dead])
+    # every follow-up repeats the same legs
+    assert {r.url.params["multi_city_json"] for r in api.requests} == {first.url.params["multi_city_json"]}
+
+
+async def test_recorded_chain_builds_complete_itineraries(provider, api, mc_query):
+    api.respond = recorded_chain
+    result = await provider.fetch_multi_city_candidates(**mc_query)
+    final = options(load("multi_city_leg3"))
+    assert len(result) == len(final) == 16
+    assert len({c["id"] for c in result}) == 16 and all(c["id"].startswith("fl_") for c in result)
+    for candidate in result:
+        assert set(candidate) == {"id", "legs", "price_per_person", "currency",
+                                  "total_travel_minutes", "total_stops",
+                                  "google_flights_url", "separate_tickets"}
+        assert candidate["separate_tickets"] is None and candidate["currency"] == "USD"
+        assert len(candidate["legs"]) == 3
+        assert numbers(candidate, 0) == ("UA 122",) and numbers(candidate, 1) == ("VY 8058",)
+        assert candidate["total_travel_minutes"] == sum(l["duration_minutes"] for l in candidate["legs"])
+        assert candidate["total_stops"] == sum(l["stops"] for l in candidate["legs"])
+        assert all(l["google_flights_url"].startswith("https://") for l in candidate["legs"])
+        # the legs chain in time, with real UTC offsets
+        for earlier, later in zip(candidate["legs"], candidate["legs"][1:]):
+            assert datetime.fromisoformat(later["departure"]) >= datetime.fromisoformat(earlier["arrival"])
+    by_last = {numbers(c, 2): c for c in result}
+    for option in final:
+        # the last step's price is the whole-trip total
+        assert by_last[flight_numbers(option)]["price_per_person"] == option["price"]
+    assert result.exhaustive is True and result.requests_used == len(api.requests) == 4
+
+
+async def test_dead_branch_in_the_recording_is_skipped_not_fatal(provider, api, mc_query):
+    """The recording's U2 8405 follow-up returns HTTP 200 with `error`; its sibling works."""
+    api.respond = recorded_chain
+    result = await provider.fetch_multi_city_candidates(**mc_query)
+    assert len(result) == 16 and not any(numbers(c, 1) == ("U2 8405",) for c in result)
+
+
+async def test_final_price_is_the_last_step_price_per_person(provider, api, mc_query):
+    query = flat_query(mc_query, 2)
+    levels = flat_levels(2, per_step=1)
+    levels[1][0]["price"] = 912
+    api.respond = synthetic_chain(levels)
+    result = await provider.fetch_multi_city_candidates(**{**query, "adults": 2})
+    candidate, = result
+    assert candidate["price_per_person"] == 456
+
+
+async def test_children_and_infants_are_not_priced(provider, api, mc_query):
+    api.respond = synthetic_chain(flat_levels(2, per_step=1))
+    with pytest.raises(ToolError, match="UNSUPPORTED_FILTER"):
+        await provider.fetch_multi_city_candidates(**{**flat_query(mc_query, 2), "children": 1})
+
+
+async def test_dead_branch_text_is_the_only_error_that_is_skipped(provider, api, mc_query):
+    api.respond = lambda request: ok({"search_metadata": {}, "error": "Invalid API key."})
+    with pytest.raises(ToolError, match="UPSTREAM_DATA_ERROR"):
+        await provider.fetch_multi_city_candidates(**mc_query)
+
+
+async def test_a_dead_first_request_is_an_empty_result(provider, api, mc_query):
+    api.respond = lambda request: ok(load("multi_city_leg3_no_results"))
+    result = await provider.fetch_multi_city_candidates(**mc_query)
+    assert result == [] and result.exhaustive is True and result.requests_used == 1
+
+
+async def test_every_branch_dead_is_an_empty_result(provider, api, mc_query):
+    levels = flat_levels(2, per_step=3)
+
+    def respond(request):
+        if "departure_token" in request.url.params:
+            return ok(load("multi_city_leg3_no_results"))
+        return synthetic_chain(levels)(request)
+
+    api.respond = respond
+    result = await provider.fetch_multi_city_candidates(**flat_query(mc_query, 2))
+    assert result == [] and result.exhaustive is True and result.requests_used == 4
+
+
+@pytest.mark.parametrize("legs,expected_requests", [(2, 4), (3, 7), (4, 10), (5, 9), (6, 6)])
+async def test_beam_width_keeps_every_search_within_the_request_cap(
+        provider, api, mc_query, legs, expected_requests):
+    """Beam 3 where it fits: 1 + 3 x (legs - 1) requests, narrower once that exceeds 10."""
+    api.respond = synthetic_chain(flat_levels(legs))
+    result = await provider.fetch_multi_city_candidates(**flat_query(mc_query, legs))
+    assert len(api.requests) == result.requests_used == expected_requests
+    assert expected_requests <= provider.MAX_REQUESTS_PER_CALL
+    assert result.exhaustive is False and len(result) > 0
+    assert all(len(c["legs"]) == legs for c in result)
+
+
+async def test_beam_continues_the_cheapest_partial_trips(provider, api, mc_query):
+    api.respond = synthetic_chain(flat_levels(3, per_step=6))
+    result = await provider.fetch_multi_city_candidates(**flat_query(mc_query, 3))
+    assert sorted(t.split(":")[0] for t in step_tokens(api, 2)) == ["t0.0", "t0.1", "t0.2"]
+    # ties on price across parents: the three kept partials all end with the cheapest option
+    assert len(step_tokens(api, 3)) == 3 and all(t.startswith("t1.0:") for t in step_tokens(api, 3))
+    assert len(result) == 3 * 6
+
+
+async def test_equal_prices_are_ranked_by_travel_time(provider, api, mc_query):
+    levels = [[synthetic_option("JFK", "LHR", utc("2027-01-05T09:00"), minutes=m, price=500,
+                                number=f"S0{i}0")
+               for i, m in enumerate([400, 300, 350, 450])],
+              [synthetic_option("LHR", "CDG", utc("2027-01-09T09:00"), number="S100")]]
+    api.respond = synthetic_chain(levels)
+    await provider.fetch_multi_city_candidates(**flat_query(mc_query, 2))
+    kept = sorted(t.split(":")[0] for t in step_tokens(api, 2))
+    assert kept == ["t0.0", "t0.1", "t0.2"]  # the 450-minute option (index 3) is the one pruned
+
+
+async def test_pruning_is_reported_and_a_complete_search_is_not(provider, api, mc_query):
+    query = flat_query(mc_query, 2)
+    api.respond = synthetic_chain(flat_levels(2, per_step=3))
+    assert (await provider.fetch_multi_city_candidates(**query)).exhaustive is True
+    api.respond = synthetic_chain(flat_levels(2, per_step=4))
+    assert (await provider.fetch_multi_city_candidates(**query)).exhaustive is False
+
+
+async def test_retries_count_toward_the_request_cap(provider, api, mc_query):
+    inner = synthetic_chain(flat_levels(4))
+    failed = []
+
+    def respond(request):
+        if step_tokens_of(request) == 2 and not failed:
+            failed.append(request)
+            return httpx.Response(503, json={"error": "synthetic"})
+        return inner(request)
+
+    def step_tokens_of(request):
+        token = request.url.params.get("departure_token", "")
+        return int(token[1:token.index(".")]) + 1 if token.startswith("t") else 0
+
+    api.respond = respond
+    result = await provider.fetch_multi_city_candidates(**flat_query(mc_query, 4))
+    assert failed and len(api.requests) == result.requests_used == provider.MAX_REQUESTS_PER_CALL
+    assert result.exhaustive is False and len(api.sleeps) == 1
+
+
+async def test_partial_trips_that_depart_before_the_previous_arrival_do_not_use_a_beam_slot(
+        provider, api, mc_query):
+    """Step 2 options 0-2 are the cheapest but leave before any step 1 option lands."""
+    early = [synthetic_option("LHR", "CDG", utc("2027-01-05T10:00"), price=400 + 10 * i,
+                              number=f"S1{i:02d}0") for i in range(3)]
+    later = [synthetic_option("LHR", "CDG", utc("2027-01-09T09:00"), price=400 + 10 * i,
+                              number=f"S1{i:02d}0") for i in range(3, 9)]
+    levels = [flat_levels(1, per_step=6)[0], early + later,
+              [synthetic_option("CDG", "FCO", utc("2027-01-12T09:00"), number="S200")]]
+    query = flat_query(mc_query, 3)
+    query["legs"][1].update(origin=["LHR"], destination=["CDG"])
+    query["legs"][0].update(origin=["JFK"], destination=["LHR"])
+    query["legs"][2].update(origin=["CDG"], destination=["FCO"])
+    api.respond = synthetic_chain(levels)
+    await provider.fetch_multi_city_candidates(**query)
+    assert len(step_tokens(api, 3)) == 3
+    assert all(int(t[3:t.index(":")]) >= 3 for t in step_tokens(api, 3))  # index of a later option
+
+
+def two_leg_query(mc_query, destination=("LHR", "LGW"), origin=("LHR", "LGW")):
+    legs = [{"origin": ["JFK"], "destination": list(destination), "depart_date": "2027-01-05",
+             "max_stops": None},
+            {"origin": list(origin), "destination": ["CDG"], "depart_date": "2027-01-06",
+             "max_stops": None}]
+    return {**mc_query, "legs": legs}
+
+
+def kept_second_legs(result):
+    return sorted(numbers(c, 1) for c in result)
+
+
+@pytest.mark.parametrize("second_departure,second_origin,kept", [
+    ("2027-01-06T15:59", "LHR", False),   # 23h59m after landing at LGW: an airport change is too soon
+    ("2027-01-06T16:00", "LHR", True),    # exactly 24 hours: allowed
+    ("2027-01-05T20:00", "LGW", True),    # same airport, 4 hours later: allowed
+    ("2027-01-05T15:00", "LGW", False),   # leaves before the first leg lands
+])
+async def test_airport_change_needs_twenty_four_elapsed_hours(
+        provider, api, mc_query, second_departure, second_origin, kept):
+    levels = [[synthetic_option("JFK", "LGW", utc("2027-01-05T09:00"), minutes=420, number="S000")],
+              [synthetic_option(second_origin, "CDG", utc(second_departure), number="S100")]]
+    api.respond = synthetic_chain(levels)
+    result = await provider.fetch_multi_city_candidates(**two_leg_query(mc_query))
+    assert (len(result) == 1) is kept
+
+
+@pytest.mark.parametrize("second_departure,kept", [
+    ("2027-03-28T11:00", False),  # 12:00 BST the next day: 24 clock hours, only 23 elapsed
+    ("2027-03-28T12:00", True),   # 13:00 BST: 24 elapsed hours
+])
+async def test_the_twenty_four_hours_are_elapsed_time_across_a_clock_change(
+        provider, api, mc_query, second_departure, kept):
+    """London moves to summer time on 2027-03-28; local clocks alone would get this wrong."""
+    levels = [[synthetic_option("JFK", "LHR", utc("2027-03-27T05:00"), minutes=420, number="S000")],
+              [synthetic_option("LGW", "CDG", utc(second_departure), number="S100")]]
+    api.respond = synthetic_chain(levels)
+    result = await provider.fetch_multi_city_candidates(**two_leg_query(mc_query))
+    assert (len(result) == 1) is kept
+
+
+async def test_legs_outside_the_requested_airports_are_dropped(provider, api, mc_query):
+    levels = [[synthetic_option("JFK", "LHR", utc("2027-01-05T09:00"), number="S000"),
+               synthetic_option("BOS", "LHR", utc("2027-01-05T09:00"), number="S010"),
+               synthetic_option("JFK", "STN", utc("2027-01-05T09:00"), number="S020")],
+              [synthetic_option("LHR", "CDG", utc("2027-01-09T09:00"), number="S100"),
+               synthetic_option("LHR", "ORY", utc("2027-01-09T09:00"), number="S110")]]
+    api.respond = synthetic_chain(levels)
+    query = two_leg_query(mc_query, destination=("LHR",), origin=("LHR",))
+    result = await provider.fetch_multi_city_candidates(**query)
+    assert [numbers(c, 0) for c in result] == [("S000",)] * 1 and kept_second_legs(result) == [("S100",)]
+
+
+@pytest.mark.parametrize("first_limit,second_limit,expected", [
+    (None, None, {("S000", "S100"), ("S000", "S110"), ("S010", "S100"), ("S010", "S110")}),
+    (0, None, {("S000", "S100"), ("S000", "S110")}),
+    (None, 0, {("S000", "S100"), ("S010", "S100")}),
+    (0, 1, {("S000", "S100"), ("S000", "S110")}),
+    (1, 0, {("S000", "S100"), ("S010", "S100")}),
+])
+async def test_each_leg_is_held_to_its_own_stop_limit(
+        provider, api, mc_query, first_limit, second_limit, expected):
+    levels = [[synthetic_option("JFK", "LHR", utc("2027-01-05T09:00"), number="S000"),
+               synthetic_option("JFK", "LHR", utc("2027-01-05T10:00"), stops=1, number="S010")],
+              [synthetic_option("LHR", "CDG", utc("2027-01-09T09:00"), number="S100"),
+               synthetic_option("LHR", "CDG", utc("2027-01-09T10:00"), stops=1, number="S110")]]
+    api.respond = synthetic_chain(levels)
+    query = two_leg_query(mc_query, destination=("LHR",), origin=("LHR",))
+    query["legs"][0]["max_stops"], query["legs"][1]["max_stops"] = first_limit, second_limit
+    result = await provider.fetch_multi_city_candidates(**query)
+    got = {(numbers(c, 0)[0], numbers(c, 1)[0]) for c in result}
+    # the one-stop options have a second segment "S0x1"; compare on the first segment only
+    assert got == expected
+
+
+async def test_unusable_options_are_dropped_and_all_unusable_is_a_data_error(provider, api, mc_query):
+    good = synthetic_option("LHR", "CDG", utc("2027-01-09T09:00"), number="S100")
+    broken = {"flights": [], "total_duration": 90, "price": 400}
+    api.respond = synthetic_chain([[synthetic_option("JFK", "LHR", utc("2027-01-05T09:00"),
+                                                     number="S000")], [broken, good]])
+    result = await provider.fetch_multi_city_candidates(
+        **two_leg_query(mc_query, destination=("LHR",), origin=("LHR",)))
+    assert len(result) == 1 and numbers(result[0], 1) == ("S100",)
+    api.respond = synthetic_chain([[broken], [good]])
+    with pytest.raises(ToolError, match="UPSTREAM_DATA_ERROR"):
+        await provider.fetch_multi_city_candidates(
+            **two_leg_query(mc_query, destination=("LHR",), origin=("LHR",)))
+
+
+async def test_multi_city_without_a_key_makes_no_request(provider, api, mc_query, monkeypatch):
+    monkeypatch.delenv("SEARCHAPI_API_KEY")
+    with pytest.raises(ToolError, match="CONFIGURATION_ERROR"):
+        await provider.fetch_multi_city_candidates(**mc_query)
+    assert api.requests == []
+
+
+@pytest.mark.parametrize("code", [401, 429, 503])
+async def test_multi_city_http_failures_propagate_for_the_tool_to_map(provider, api, mc_query, code):
+    api.respond = status(code)
+    with pytest.raises(httpx.HTTPStatusError):
+        await provider.fetch_multi_city_candidates(**mc_query)
+
+
+async def test_the_server_hook_delegates_to_the_provider(provider, server, api, mc_query):
+    api.respond = recorded_chain
+    result = await server.fetch_multi_city_candidates(**mc_query)
+    assert len(result) == 16

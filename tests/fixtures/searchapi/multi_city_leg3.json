@@ -1,0 +1,1867 @@
+{
+  "search_metadata": {
+    "id": "search_REDACTED",
+    "status": "Success",
+    "created_at": "2026-11-24T05:11:40Z",
+    "request_time_taken": 6.37,
+    "parsing_time_taken": 0.0,
+    "total_time_taken": 6.38,
+    "request_url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpaEgoyMDI3LTAxLTA1Ih8KA0VXUhIKMjAyNy0wMS0wNRoDTEhSKgJVQTIDMTIyagcIARIDSkZLagcIARIDRVdSagcIARIDTEdBcgcIARIDTEhScgcIARIDTEdXGlISCjIwMjctMDEtMDkiIAoDTEhSEgoyMDI3LTAxLTA5GgNPUlkqAlZZMgQ4MDU4agcIARIDTEhSagcIARIDTEdXcgcIARIDQ0RHcgcIARIDT1JZGjkSCjIwMjctMDEtMTRqBwgBEgNDREdqBwgBEgNPUllyBwgBEgNKRktyBwgBEgNFV1JyBwgBEgNMR0FAAUgBcAGCAQsI____________AZgBAw&tfu=CmxDalJJWTFGU2JHMW1TVXhqVGtGQlFqZExlbmRDUnkwdExTMHRMUzB0TFMxNWJHUXlNVUZCUVVGQlIzTkdSemhyU25KaGN6QkJFZ1pXV1Rnd05UZ2FDd2lJdEFRUUFob0RWVk5FT0J4d2lMUUUSAggAIgMSATA&hl=en&gl=us&curr=USD",
+    "html_url": "https://www.searchapi.io/api/v1/searches/search_REDACTED.html",
+    "json_url": "https://www.searchapi.io/api/v1/searches/search_REDACTED"
+  },
+  "search_parameters": {
+    "engine": "google_flights",
+    "currency": "USD",
+    "hl": "en",
+    "gl": "us",
+    "flight_type": "multi_city",
+    "travel_class": "economy",
+    "stops": "any",
+    "adults": "1",
+    "children": "0",
+    "infants_in_seat": "0",
+    "infants_on_lap": "0",
+    "departure_token": "WyJDalJJWTFGU2JHMW1TVXhqVGtGQlFqZExlbmRDUnkwdExTMHRMUzB0TFMxNWJHUXlNVUZCUVVGQlIzTkdSemhyU25KaGN6QkJFZ1pXV1Rnd05UZ2FDd2lJdEFRUUFob0RWVk5FT0J4d2lMUUUiLFtbIkVXUiIsIjIwMjctMDEtMDUiLCJMSFIiLG51bGwsIlVBIiwiMTIyIl1dLFtbIkxIUiIsIjIwMjctMDEtMDkiLCJPUlkiLG51bGwsIlZZIiwiODA1OCJdXV0=",
+    "multi_city_json": "[{\"departure_id\": \"JFK,EWR,LGA\", \"arrival_id\": \"LHR,LGW\", \"outbound_date\": \"2027-01-05\"}, {\"departure_id\": \"LHR,LGW\", \"arrival_id\": \"CDG,ORY\", \"outbound_date\": \"2027-01-09\"}, {\"departure_id\": \"CDG,ORY\", \"arrival_id\": \"JFK,EWR,LGA\", \"outbound_date\": \"2027-01-14\"}]"
+  },
+  "best_flights": [
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "Aéroport de Paris-Charles de Gaulle",
+            "id": "CDG",
+            "date": "2027-01-14",
+            "time": "10:15"
+          },
+          "arrival_airport": {
+            "name": "Dublin Airport",
+            "id": "DUB",
+            "date": "2027-01-14",
+            "time": "11:05"
+          },
+          "duration": 110,
+          "airplane": "Airbus A321neo",
+          "airline": "Aer Lingus",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/EI.png",
+          "travel_class": "Economy",
+          "flight_number": "EI 521",
+          "extensions": [
+            "Power and USB outlets",
+            "On-demand video",
+            "Seat type Average Legroom",
+            "Legroom 31 inches",
+            "Carbon emission: 79 kg"
+          ],
+          "detected_extensions": {
+            "has_power_and_usb_outlets": true,
+            "has_on_demand_video": true,
+            "seat_type": "Average Legroom",
+            "legroom_short": "31 in",
+            "legroom_long": "31 inches",
+            "carbon_emission": 79
+          }
+        },
+        {
+          "departure_airport": {
+            "name": "Dublin Airport",
+            "id": "DUB",
+            "date": "2027-01-14",
+            "time": "13:15"
+          },
+          "arrival_airport": {
+            "name": "Newark Liberty International Airport",
+            "id": "EWR",
+            "date": "2027-01-14",
+            "time": "16:15"
+          },
+          "duration": 480,
+          "airplane": "Airbus A321neo",
+          "airline": "Aer Lingus",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/EI.png",
+          "travel_class": "Economy",
+          "flight_number": "EI 101",
+          "extensions": [
+            "Power and USB outlets",
+            "On-demand video",
+            "Seat type Average Legroom",
+            "Legroom 31 inches",
+            "Carbon emission: 401 kg"
+          ],
+          "detected_extensions": {
+            "has_power_and_usb_outlets": true,
+            "has_on_demand_video": true,
+            "seat_type": "Average Legroom",
+            "legroom_short": "31 in",
+            "legroom_long": "31 inches",
+            "carbon_emission": 401
+          }
+        }
+      ],
+      "layovers": [
+        {
+          "duration": 130,
+          "name": "Dublin Airport",
+          "id": "DUB"
+        }
+      ],
+      "total_duration": 720,
+      "carbon_emissions": {
+        "this_flight": 481000,
+        "typical_for_this_route": 374000,
+        "difference_percent": 29,
+        "lowest_route": 374000
+      },
+      "price": 766,
+      "type": "Multi city",
+      "extensions": [
+        "Ticket changes for a fee",
+        "Fare non-refundable, taxes may be refundable",
+        "Checked baggage for a fee",
+        "Carry-on bag for a fee"
+      ],
+      "baggage": {
+        "carry_on_bag": "for fee",
+        "checked_bag": "for fee"
+      },
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/EI.png",
+      "booking_token": "WyJDalJJT0U5MmJtUjVaVkUwZHpoQlEyZDVZVUZDUnkwdExTMHRMUzB0TFhaMGNXRXhORUZCUVVGQlIzTkdTRWs0U1hCWE1ubEJFZ3RGU1RVeU1YeEZTVEV3TVJvTENMaldCQkFDR2dOVlUwUTRISEM0MWdRPSIsW1siRVdSIiwiMjAyNy0wMS0wNSIsIkxIUiIsbnVsbCwiVUEiLCIxMjIiXV0sW1siTEhSIiwiMjAyNy0wMS0wOSIsIk9SWSIsbnVsbCwiVlkiLCI4MDU4Il1dLFtbIkNERyIsIjIwMjctMDEtMTQiLCJEVUIiLG51bGwsIkVJIiwiNTIxIl0sWyJEVUIiLCIyMDI3LTAxLTE0IiwiRVdSIixudWxsLCJFSSIsIjEwMSJdXV0="
+    },
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "Aéroport de Paris-Charles de Gaulle",
+            "id": "CDG",
+            "date": "2027-01-14",
+            "time": "11:25"
+          },
+          "arrival_airport": {
+            "name": "John F. Kennedy International Airport",
+            "id": "JFK",
+            "date": "2027-01-14",
+            "time": "13:55"
+          },
+          "duration": 510,
+          "airplane": "Boeing 787",
+          "airline": "American",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AA.png",
+          "travel_class": "Economy",
+          "flight_number": "AA 43",
+          "ticket_also_sold_by": [
+            "Finnair",
+            "Iberia"
+          ],
+          "extensions": [
+            "Power and USB outlets",
+            "On-demand video",
+            "Wi-Fi for fee",
+            "Seat type Average Legroom",
+            "Legroom 31 inches",
+            "Carbon emission: 376 kg"
+          ],
+          "detected_extensions": {
+            "has_power_and_usb_outlets": true,
+            "has_on_demand_video": true,
+            "wifi": "for fee",
+            "seat_type": "Average Legroom",
+            "legroom_short": "31 in",
+            "legroom_long": "31 inches",
+            "carbon_emission": 376
+          }
+        }
+      ],
+      "total_duration": 510,
+      "carbon_emissions": {
+        "this_flight": 377000,
+        "typical_for_this_route": 374000,
+        "difference_percent": 1,
+        "lowest_route": 374000
+      },
+      "price": 812,
+      "type": "Multi city",
+      "extensions": [
+        "Ticket changes for a fee",
+        "Fare non-refundable, taxes may be refundable",
+        "Checked baggage for a fee",
+        "Carry-on bag for a fee"
+      ],
+      "baggage": {
+        "carry_on_bag": "for fee",
+        "checked_bag": "for fee"
+      },
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AA.png",
+      "booking_token": "WyJDalJJT0U5MmJtUjVaVkUwZHpoQlEyZDVZVUZDUnkwdExTMHRMUzB0TFhaMGNXRXhORUZCUVVGQlIzTkdTRWs0U1hCWE1ubEJFZ1JCUVRRekdnc0lzUG9FRUFJYUExVlRSRGdjY0xENkJBPT0iLFtbIkVXUiIsIjIwMjctMDEtMDUiLCJMSFIiLG51bGwsIlVBIiwiMTIyIl1dLFtbIkxIUiIsIjIwMjctMDEtMDkiLCJPUlkiLG51bGwsIlZZIiwiODA1OCJdXSxbWyJDREciLCIyMDI3LTAxLTE0IiwiSkZLIixudWxsLCJBQSIsIjQzIl1dXQ=="
+    },
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "Aéroport de Paris-Charles de Gaulle",
+            "id": "CDG",
+            "date": "2027-01-14",
+            "time": "14:40"
+          },
+          "arrival_airport": {
+            "name": "John F. Kennedy International Airport",
+            "id": "JFK",
+            "date": "2027-01-14",
+            "time": "17:22"
+          },
+          "duration": 522,
+          "airplane": "Boeing 767",
+          "airline": "Delta",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/DL.png",
+          "travel_class": "Economy",
+          "flight_number": "DL 267",
+          "ticket_also_sold_by": [
+            "Air France",
+            "Virgin Atlantic"
+          ],
+          "extensions": [
+            "Power and USB outlets",
+            "On-demand video",
+            "Wi-Fi free",
+            "Seat type Average Legroom",
+            "Legroom 31 inches",
+            "Carbon emission: 317 kg"
+          ],
+          "detected_extensions": {
+            "has_power_and_usb_outlets": true,
+            "has_on_demand_video": true,
+            "wifi": "free",
+            "seat_type": "Average Legroom",
+            "legroom_short": "31 in",
+            "legroom_long": "31 inches",
+            "carbon_emission": 317
+          }
+        }
+      ],
+      "total_duration": 522,
+      "carbon_emissions": {
+        "this_flight": 317000,
+        "typical_for_this_route": 374000,
+        "difference_percent": -15,
+        "lowest_route": 374000
+      },
+      "price": 873,
+      "type": "Multi city",
+      "extensions": [
+        "Ticket changes for a fee",
+        "Fare non-refundable, taxes may be refundable",
+        "Checked baggage for a fee",
+        "Carry-on bag for a fee"
+      ],
+      "baggage": {
+        "carry_on_bag": "for fee",
+        "checked_bag": "for fee"
+      },
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/DL.png",
+      "booking_token": "WyJDalJJT0U5MmJtUjVaVkUwZHpoQlEyZDVZVUZDUnkwdExTMHRMUzB0TFhaMGNXRXhORUZCUVVGQlIzTkdTRWs0U1hCWE1ubEJFZ1ZFVERJMk54b0xDSVNxQlJBQ0dnTlZVMFE0SEhDRXFnVT0iLFtbIkVXUiIsIjIwMjctMDEtMDUiLCJMSFIiLG51bGwsIlVBIiwiMTIyIl1dLFtbIkxIUiIsIjIwMjctMDEtMDkiLCJPUlkiLG51bGwsIlZZIiwiODA1OCJdXSxbWyJDREciLCIyMDI3LTAxLTE0IiwiSkZLIixudWxsLCJETCIsIjI2NyJdXV0="
+    },
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "Aéroport de Paris-Charles de Gaulle",
+            "id": "CDG",
+            "date": "2027-01-14",
+            "time": "16:30"
+          },
+          "arrival_airport": {
+            "name": "John F. Kennedy International Airport",
+            "id": "JFK",
+            "date": "2027-01-14",
+            "time": "19:05"
+          },
+          "duration": 515,
+          "airplane": "Boeing 777",
+          "airline": "Air France",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AF.png",
+          "travel_class": "Economy",
+          "flight_number": "AF 8",
+          "ticket_also_sold_by": [
+            "Delta"
+          ],
+          "extensions": [
+            "In-seat USB outlet",
+            "On-demand video",
+            "Seat type Average Legroom",
+            "Legroom 31 inches",
+            "Carbon emission: 344 kg"
+          ],
+          "detected_extensions": {
+            "has_in_seat_usb_outlet": true,
+            "has_on_demand_video": true,
+            "seat_type": "Average Legroom",
+            "legroom_short": "31 in",
+            "legroom_long": "31 inches",
+            "carbon_emission": 344
+          }
+        }
+      ],
+      "total_duration": 515,
+      "carbon_emissions": {
+        "this_flight": 345000,
+        "typical_for_this_route": 374000,
+        "difference_percent": -8,
+        "lowest_route": 374000
+      },
+      "price": 874,
+      "type": "Multi city",
+      "extensions": [
+        "Ticket changes for a fee",
+        "Fare non-refundable, taxes may be refundable",
+        "Checked baggage for a fee",
+        "Carry-on bag for a fee"
+      ],
+      "baggage": {
+        "carry_on_bag": "for fee",
+        "checked_bag": "for fee"
+      },
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AF.png",
+      "booking_token": "WyJDalJJT0U5MmJtUjVaVkUwZHpoQlEyZDVZVUZDUnkwdExTMHRMUzB0TFhaMGNXRXhORUZCUVVGQlIzTkdTRWs0U1hCWE1ubEJFZ05CUmpnYUN3am9xZ1VRQWhvRFZWTkVPQnh3NktvRiIsW1siRVdSIiwiMjAyNy0wMS0wNSIsIkxIUiIsbnVsbCwiVUEiLCIxMjIiXV0sW1siTEhSIiwiMjAyNy0wMS0wOSIsIk9SWSIsbnVsbCwiVlkiLCI4MDU4Il1dLFtbIkNERyIsIjIwMjctMDEtMTQiLCJKRksiLG51bGwsIkFGIiwiOCJdXV0="
+    }
+  ],
+  "other_flights": [
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "Paris Orly Airport",
+            "id": "ORY",
+            "date": "2027-01-14",
+            "time": "08:20"
+          },
+          "arrival_airport": {
+            "name": "Josep Tarradellas Barcelona-El Prat Airport",
+            "id": "BCN",
+            "date": "2027-01-14",
+            "time": "10:00"
+          },
+          "duration": 100,
+          "airline": "Vueling",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/VY.png",
+          "travel_class": "Economy",
+          "flight_number": "VY 8001",
+          "ticket_also_sold_by": [
+            "LEVEL"
+          ],
+          "is_often_delayed": true,
+          "extensions": [
+            "In-seat USB outlet",
+            "Stream video to own device",
+            "Wi-Fi for fee",
+            "Seat type Below Average Legroom",
+            "Legroom 29 inches",
+            "Carbon emission: 80 kg"
+          ],
+          "detected_extensions": {
+            "has_in_seat_usb_outlet": true,
+            "has_stream_video_to_own_device": true,
+            "wifi": "for fee",
+            "seat_type": "Below Average Legroom",
+            "legroom_short": "29 in",
+            "legroom_long": "29 inches",
+            "carbon_emission": 80
+          }
+        },
+        {
+          "departure_airport": {
+            "name": "Josep Tarradellas Barcelona-El Prat Airport",
+            "id": "BCN",
+            "date": "2027-01-14",
+            "time": "18:45"
+          },
+          "arrival_airport": {
+            "name": "John F. Kennedy International Airport",
+            "id": "JFK",
+            "date": "2027-01-14",
+            "time": "22:00"
+          },
+          "duration": 555,
+          "airline": "LEVEL",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/LL.png",
+          "travel_class": "Economy",
+          "flight_number": "LL 2627"
+        }
+      ],
+      "layovers": [
+        {
+          "duration": 525,
+          "name": "Josep Tarradellas Barcelona-El Prat Airport",
+          "id": "BCN",
+          "is_overnight": true
+        }
+      ],
+      "total_duration": 1180,
+      "carbon_emissions": {
+        "typical_for_this_route": 374000,
+        "lowest_route": 374000
+      },
+      "price": 722,
+      "type": "Multi city",
+      "extensions": [
+        "Ticket changes for a fee",
+        "Fare non-refundable, taxes may be refundable",
+        "Checked baggage for a fee",
+        "Carry-on bag for a fee"
+      ],
+      "baggage": {
+        "carry_on_bag": "for fee",
+        "checked_bag": "for fee"
+      },
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/multi.png",
+      "booking_token": "WyJDalJJT0U5MmJtUjVaVkUwZHpoQlEyZDVZVUZDUnkwdExTMHRMUzB0TFhaMGNXRXhORUZCUVVGQlIzTkdTRWs0U1hCWE1ubEJFZzFXV1Rnd01ERjhURXd5TmpJM0dnc0lpTFFFRUFJYUExVlRSRGdjY0lpMEJBPT0iLFtbIkVXUiIsIjIwMjctMDEtMDUiLCJMSFIiLG51bGwsIlVBIiwiMTIyIl1dLFtbIkxIUiIsIjIwMjctMDEtMDkiLCJPUlkiLG51bGwsIlZZIiwiODA1OCJdXSxbWyJPUlkiLCIyMDI3LTAxLTE0IiwiQkNOIixudWxsLCJWWSIsIjgwMDEiXSxbIkJDTiIsIjIwMjctMDEtMTQiLCJKRksiLG51bGwsIkxMIiwiMjYyNyJdXV0="
+    },
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "Aéroport de Paris-Charles de Gaulle",
+            "id": "CDG",
+            "date": "2027-01-14",
+            "time": "09:50"
+          },
+          "arrival_airport": {
+            "name": "Josep Tarradellas Barcelona-El Prat Airport",
+            "id": "BCN",
+            "date": "2027-01-14",
+            "time": "11:45"
+          },
+          "duration": 115,
+          "airline": "Vueling",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/VY.png",
+          "travel_class": "Economy",
+          "flight_number": "VY 8061",
+          "ticket_also_sold_by": [
+            "LEVEL"
+          ],
+          "extensions": [
+            "In-seat USB outlet",
+            "Stream video to own device",
+            "Wi-Fi for fee",
+            "Seat type Below Average Legroom",
+            "Legroom 29 inches",
+            "Carbon emission: 83 kg"
+          ],
+          "detected_extensions": {
+            "has_in_seat_usb_outlet": true,
+            "has_stream_video_to_own_device": true,
+            "wifi": "for fee",
+            "seat_type": "Below Average Legroom",
+            "legroom_short": "29 in",
+            "legroom_long": "29 inches",
+            "carbon_emission": 83
+          }
+        },
+        {
+          "departure_airport": {
+            "name": "Josep Tarradellas Barcelona-El Prat Airport",
+            "id": "BCN",
+            "date": "2027-01-14",
+            "time": "18:45"
+          },
+          "arrival_airport": {
+            "name": "John F. Kennedy International Airport",
+            "id": "JFK",
+            "date": "2027-01-14",
+            "time": "22:00"
+          },
+          "duration": 555,
+          "airline": "LEVEL",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/LL.png",
+          "travel_class": "Economy",
+          "flight_number": "LL 2627"
+        }
+      ],
+      "layovers": [
+        {
+          "duration": 420,
+          "name": "Josep Tarradellas Barcelona-El Prat Airport",
+          "id": "BCN",
+          "is_overnight": true
+        }
+      ],
+      "total_duration": 1090,
+      "carbon_emissions": {
+        "typical_for_this_route": 374000,
+        "lowest_route": 374000
+      },
+      "price": 723,
+      "type": "Multi city",
+      "extensions": [
+        "Ticket changes for a fee",
+        "Fare non-refundable, taxes may be refundable",
+        "Checked baggage for a fee",
+        "Carry-on bag for a fee"
+      ],
+      "baggage": {
+        "carry_on_bag": "for fee",
+        "checked_bag": "for fee"
+      },
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/multi.png",
+      "booking_token": "WyJDalJJT0U5MmJtUjVaVkUwZHpoQlEyZDVZVUZDUnkwdExTMHRMUzB0TFhaMGNXRXhORUZCUVVGQlIzTkdTRWs0U1hCWE1ubEJFZzFXV1Rnd05qRjhURXd5TmpJM0dnc0k3TFFFRUFJYUExVlRSRGdjY095MEJBPT0iLFtbIkVXUiIsIjIwMjctMDEtMDUiLCJMSFIiLG51bGwsIlVBIiwiMTIyIl1dLFtbIkxIUiIsIjIwMjctMDEtMDkiLCJPUlkiLG51bGwsIlZZIiwiODA1OCJdXSxbWyJDREciLCIyMDI3LTAxLTE0IiwiQkNOIixudWxsLCJWWSIsIjgwNjEiXSxbIkJDTiIsIjIwMjctMDEtMTQiLCJKRksiLG51bGwsIkxMIiwiMjYyNyJdXV0="
+    },
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "Paris Orly Airport",
+            "id": "ORY",
+            "date": "2027-01-14",
+            "time": "16:45"
+          },
+          "arrival_airport": {
+            "name": "Francisco Sá Carneiro Airport",
+            "id": "OPO",
+            "date": "2027-01-14",
+            "time": "18:00"
+          },
+          "duration": 135,
+          "airplane": "Airbus A320neo",
+          "airline": "Tap Air Portugal",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/TP.png",
+          "travel_class": "Economy",
+          "flight_number": "TP 455",
+          "is_often_delayed": true,
+          "extensions": [
+            "Seat type Below Average Legroom",
+            "Legroom 28 inches",
+            "Carbon emission: 100 kg"
+          ],
+          "detected_extensions": {
+            "seat_type": "Below Average Legroom",
+            "legroom_short": "28 in",
+            "legroom_long": "28 inches",
+            "carbon_emission": 100
+          }
+        },
+        {
+          "departure_airport": {
+            "name": "Francisco Sá Carneiro Airport",
+            "id": "OPO",
+            "date": "2027-01-15",
+            "time": "18:35"
+          },
+          "arrival_airport": {
+            "name": "Newark Liberty International Airport",
+            "id": "EWR",
+            "date": "2027-01-15",
+            "time": "21:55"
+          },
+          "duration": 500,
+          "airplane": "Airbus A321neo",
+          "airline": "Tap Air Portugal",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/TP.png",
+          "travel_class": "Economy",
+          "flight_number": "TP 211",
+          "extensions": [
+            "Power and USB outlets",
+            "On-demand video",
+            "Wi-Fi for fee",
+            "Seat type Average Legroom",
+            "Legroom 31 inches",
+            "Carbon emission: 493 kg"
+          ],
+          "detected_extensions": {
+            "has_power_and_usb_outlets": true,
+            "has_on_demand_video": true,
+            "wifi": "for fee",
+            "seat_type": "Average Legroom",
+            "legroom_short": "31 in",
+            "legroom_long": "31 inches",
+            "carbon_emission": 493
+          }
+        }
+      ],
+      "layovers": [
+        {
+          "duration": 1475,
+          "name": "Francisco Sá Carneiro Airport",
+          "id": "OPO",
+          "is_overnight": true
+        }
+      ],
+      "total_duration": 2110,
+      "carbon_emissions": {
+        "this_flight": 594000,
+        "typical_for_this_route": 374000,
+        "difference_percent": 59,
+        "lowest_route": 374000
+      },
+      "price": 728,
+      "type": "Multi city",
+      "extensions": [
+        "Ticket changes for a fee",
+        "Fare non-refundable, taxes may be refundable",
+        "Checked baggage for a fee",
+        "Carry-on bag for a fee"
+      ],
+      "baggage": {
+        "carry_on_bag": "for fee",
+        "checked_bag": "for fee"
+      },
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/TP.png",
+      "booking_token": "WyJDalJJT0U5MmJtUjVaVkUwZHpoQlEyZDVZVUZDUnkwdExTMHRMUzB0TFhaMGNXRXhORUZCUVVGQlIzTkdTRWs0U1hCWE1ubEJFZ3RVVURRMU5YeFVVREl4TVJvTENPQzRCQkFDR2dOVlUwUTRISERndUFRPSIsW1siRVdSIiwiMjAyNy0wMS0wNSIsIkxIUiIsbnVsbCwiVUEiLCIxMjIiXV0sW1siTEhSIiwiMjAyNy0wMS0wOSIsIk9SWSIsbnVsbCwiVlkiLCI4MDU4Il1dLFtbIk9SWSIsIjIwMjctMDEtMTQiLCJPUE8iLG51bGwsIlRQIiwiNDU1Il0sWyJPUE8iLCIyMDI3LTAxLTE1IiwiRVdSIixudWxsLCJUUCIsIjIxMSJdXV0="
+    },
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "Paris Orly Airport",
+            "id": "ORY",
+            "date": "2027-01-14",
+            "time": "12:50"
+          },
+          "arrival_airport": {
+            "name": "Adolfo Suárez Madrid-Barajas Airport",
+            "id": "MAD",
+            "date": "2027-01-14",
+            "time": "14:55"
+          },
+          "duration": 125,
+          "airplane": "Airbus A320",
+          "airline": "Iberia",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/IB.png",
+          "travel_class": "Economy",
+          "flight_number": "IB 572",
+          "ticket_also_sold_by": [
+            "American"
+          ],
+          "extensions": [
+            "In-seat USB outlet",
+            "Wi-Fi for fee",
+            "Seat type Below Average Legroom",
+            "Legroom 28 inches",
+            "Carbon emission: 110 kg"
+          ],
+          "detected_extensions": {
+            "has_in_seat_usb_outlet": true,
+            "wifi": "for fee",
+            "seat_type": "Below Average Legroom",
+            "legroom_short": "28 in",
+            "legroom_long": "28 inches",
+            "carbon_emission": 110
+          }
+        },
+        {
+          "departure_airport": {
+            "name": "Adolfo Suárez Madrid-Barajas Airport",
+            "id": "MAD",
+            "date": "2027-01-14",
+            "time": "16:15"
+          },
+          "arrival_airport": {
+            "name": "Boston Logan International Airport",
+            "id": "BOS",
+            "date": "2027-01-14",
+            "time": "18:25"
+          },
+          "duration": 490,
+          "airplane": "Airbus A330",
+          "airline": "Iberia",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/IB.png",
+          "travel_class": "Economy",
+          "flight_number": "IB 347",
+          "ticket_also_sold_by": [
+            "American"
+          ],
+          "extensions": [
+            "Power and USB outlets",
+            "On-demand video",
+            "Wi-Fi for fee",
+            "Seat type Average Legroom",
+            "Legroom 31 inches",
+            "Carbon emission: 505 kg"
+          ],
+          "detected_extensions": {
+            "has_power_and_usb_outlets": true,
+            "has_on_demand_video": true,
+            "wifi": "for fee",
+            "seat_type": "Average Legroom",
+            "legroom_short": "31 in",
+            "legroom_long": "31 inches",
+            "carbon_emission": 505
+          }
+        },
+        {
+          "departure_airport": {
+            "name": "Boston Logan International Airport",
+            "id": "BOS",
+            "date": "2027-01-15",
+            "time": "06:00"
+          },
+          "arrival_airport": {
+            "name": "LaGuardia Airport",
+            "id": "LGA",
+            "date": "2027-01-15",
+            "time": "07:19"
+          },
+          "duration": 79,
+          "airplane": "Embraer 175",
+          "airline": "American",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AA.png",
+          "travel_class": "Economy",
+          "flight_number": "AA 4424",
+          "extensions": [
+            "Power and USB outlets",
+            "Stream video to own device",
+            "Wi-Fi free",
+            "Seat type Average Legroom",
+            "Legroom 30 inches",
+            "Carbon emission: 98 kg"
+          ],
+          "detected_extensions": {
+            "has_power_and_usb_outlets": true,
+            "has_stream_video_to_own_device": true,
+            "wifi": "free",
+            "seat_type": "Average Legroom",
+            "legroom_short": "30 in",
+            "legroom_long": "30 inches",
+            "carbon_emission": 98
+          }
+        }
+      ],
+      "layovers": [
+        {
+          "duration": 80,
+          "name": "Adolfo Suárez Madrid-Barajas Airport",
+          "id": "MAD"
+        },
+        {
+          "duration": 695,
+          "name": "Boston Logan International Airport",
+          "id": "BOS",
+          "is_overnight": true
+        }
+      ],
+      "total_duration": 1469,
+      "carbon_emissions": {
+        "this_flight": 714000,
+        "typical_for_this_route": 374000,
+        "difference_percent": 91,
+        "lowest_route": 374000
+      },
+      "price": 817,
+      "type": "Multi city",
+      "extensions": [
+        "Ticket changes for a fee",
+        "Fare non-refundable, taxes may be refundable",
+        "Checked baggage for a fee",
+        "Carry-on bag for a fee"
+      ],
+      "baggage": {
+        "carry_on_bag": "for fee",
+        "checked_bag": "for fee"
+      },
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/multi.png",
+      "booking_token": "WyJDalJJT0U5MmJtUjVaVkUwZHpoQlEyZDVZVUZDUnkwdExTMHRMUzB0TFhaMGNXRXhORUZCUVVGQlIzTkdTRWs0U1hCWE1ubEJFaEpKUWpVM01ueEpRak0wTjN4QlFUUTBNalFhQ3dpay9nUVFBaG9EVlZORU9CeHdwUDRFIixbWyJFV1IiLCIyMDI3LTAxLTA1IiwiTEhSIixudWxsLCJVQSIsIjEyMiJdXSxbWyJMSFIiLCIyMDI3LTAxLTA5IiwiT1JZIixudWxsLCJWWSIsIjgwNTgiXV0sW1siT1JZIiwiMjAyNy0wMS0xNCIsIk1BRCIsbnVsbCwiSUIiLCI1NzIiXSxbIk1BRCIsIjIwMjctMDEtMTQiLCJCT1MiLG51bGwsIklCIiwiMzQ3Il0sWyJCT1MiLCIyMDI3LTAxLTE1IiwiTEdBIixudWxsLCJBQSIsIjQ0MjQiXV1d"
+    },
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "Aéroport de Paris-Charles de Gaulle",
+            "id": "CDG",
+            "date": "2027-01-14",
+            "time": "12:30"
+          },
+          "arrival_airport": {
+            "name": "John F. Kennedy International Airport",
+            "id": "JFK",
+            "date": "2027-01-14",
+            "time": "15:18"
+          },
+          "duration": 528,
+          "airplane": "Airbus A330",
+          "airline": "Delta",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/DL.png",
+          "travel_class": "Economy",
+          "flight_number": "DL 263",
+          "ticket_also_sold_by": [
+            "Air France",
+            "Virgin Atlantic"
+          ],
+          "extensions": [
+            "Power and USB outlets",
+            "On-demand video",
+            "Wi-Fi free",
+            "Seat type Average Legroom",
+            "Legroom 31 inches",
+            "Carbon emission: 371 kg"
+          ],
+          "detected_extensions": {
+            "has_power_and_usb_outlets": true,
+            "has_on_demand_video": true,
+            "wifi": "free",
+            "seat_type": "Average Legroom",
+            "legroom_short": "31 in",
+            "legroom_long": "31 inches",
+            "carbon_emission": 371
+          }
+        }
+      ],
+      "total_duration": 528,
+      "carbon_emissions": {
+        "this_flight": 371000,
+        "typical_for_this_route": 374000,
+        "difference_percent": -1,
+        "lowest_route": 374000
+      },
+      "price": 873,
+      "type": "Multi city",
+      "extensions": [
+        "Ticket changes for a fee",
+        "Fare non-refundable, taxes may be refundable",
+        "Checked baggage for a fee",
+        "Carry-on bag for a fee"
+      ],
+      "baggage": {
+        "carry_on_bag": "for fee",
+        "checked_bag": "for fee"
+      },
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/DL.png",
+      "booking_token": "WyJDalJJT0U5MmJtUjVaVkUwZHpoQlEyZDVZVUZDUnkwdExTMHRMUzB0TFhaMGNXRXhORUZCUVVGQlIzTkdTRWs0U1hCWE1ubEJFZ1ZFVERJMk14b0xDSVNxQlJBQ0dnTlZVMFE0SEhDRXFnVT0iLFtbIkVXUiIsIjIwMjctMDEtMDUiLCJMSFIiLG51bGwsIlVBIiwiMTIyIl1dLFtbIkxIUiIsIjIwMjctMDEtMDkiLCJPUlkiLG51bGwsIlZZIiwiODA1OCJdXSxbWyJDREciLCIyMDI3LTAxLTE0IiwiSkZLIixudWxsLCJETCIsIjI2MyJdXV0="
+    },
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "Aéroport de Paris-Charles de Gaulle",
+            "id": "CDG",
+            "date": "2027-01-14",
+            "time": "08:30"
+          },
+          "arrival_airport": {
+            "name": "John F. Kennedy International Airport",
+            "id": "JFK",
+            "date": "2027-01-14",
+            "time": "10:55"
+          },
+          "duration": 505,
+          "airplane": "Boeing 777",
+          "airline": "Air France",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AF.png",
+          "travel_class": "Economy",
+          "flight_number": "AF 2",
+          "ticket_also_sold_by": [
+            "Delta"
+          ],
+          "extensions": [
+            "In-seat USB outlet",
+            "On-demand video",
+            "Seat type Average Legroom",
+            "Legroom 31 inches",
+            "Carbon emission: 344 kg"
+          ],
+          "detected_extensions": {
+            "has_in_seat_usb_outlet": true,
+            "has_on_demand_video": true,
+            "seat_type": "Average Legroom",
+            "legroom_short": "31 in",
+            "legroom_long": "31 inches",
+            "carbon_emission": 344
+          }
+        }
+      ],
+      "total_duration": 505,
+      "carbon_emissions": {
+        "this_flight": 345000,
+        "typical_for_this_route": 374000,
+        "difference_percent": -8,
+        "lowest_route": 374000
+      },
+      "price": 874,
+      "type": "Multi city",
+      "extensions": [
+        "Ticket changes for a fee",
+        "Fare non-refundable, taxes may be refundable",
+        "Checked baggage for a fee",
+        "Carry-on bag for a fee"
+      ],
+      "baggage": {
+        "carry_on_bag": "for fee",
+        "checked_bag": "for fee"
+      },
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AF.png",
+      "booking_token": "WyJDalJJT0U5MmJtUjVaVkUwZHpoQlEyZDVZVUZDUnkwdExTMHRMUzB0TFhaMGNXRXhORUZCUVVGQlIzTkdTRWs0U1hCWE1ubEJFZ05CUmpJYUN3am9xZ1VRQWhvRFZWTkVPQnh3NktvRiIsW1siRVdSIiwiMjAyNy0wMS0wNSIsIkxIUiIsbnVsbCwiVUEiLCIxMjIiXV0sW1siTEhSIiwiMjAyNy0wMS0wOSIsIk9SWSIsbnVsbCwiVlkiLCI4MDU4Il1dLFtbIkNERyIsIjIwMjctMDEtMTQiLCJKRksiLG51bGwsIkFGIiwiMiJdXV0="
+    },
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "Aéroport de Paris-Charles de Gaulle",
+            "id": "CDG",
+            "date": "2027-01-14",
+            "time": "10:30"
+          },
+          "arrival_airport": {
+            "name": "John F. Kennedy International Airport",
+            "id": "JFK",
+            "date": "2027-01-14",
+            "time": "12:55"
+          },
+          "duration": 505,
+          "airplane": "Boeing 777",
+          "airline": "Air France",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AF.png",
+          "travel_class": "Economy",
+          "flight_number": "AF 4",
+          "ticket_also_sold_by": [
+            "Delta"
+          ],
+          "extensions": [
+            "In-seat USB outlet",
+            "On-demand video",
+            "Seat type Average Legroom",
+            "Legroom 31 inches",
+            "Carbon emission: 344 kg"
+          ],
+          "detected_extensions": {
+            "has_in_seat_usb_outlet": true,
+            "has_on_demand_video": true,
+            "seat_type": "Average Legroom",
+            "legroom_short": "31 in",
+            "legroom_long": "31 inches",
+            "carbon_emission": 344
+          }
+        }
+      ],
+      "total_duration": 505,
+      "carbon_emissions": {
+        "this_flight": 345000,
+        "typical_for_this_route": 374000,
+        "difference_percent": -8,
+        "lowest_route": 374000
+      },
+      "price": 874,
+      "type": "Multi city",
+      "extensions": [
+        "Ticket changes for a fee",
+        "Fare non-refundable, taxes may be refundable",
+        "Checked baggage for a fee",
+        "Carry-on bag for a fee"
+      ],
+      "baggage": {
+        "carry_on_bag": "for fee",
+        "checked_bag": "for fee"
+      },
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AF.png",
+      "booking_token": "WyJDalJJT0U5MmJtUjVaVkUwZHpoQlEyZDVZVUZDUnkwdExTMHRMUzB0TFhaMGNXRXhORUZCUVVGQlIzTkdTRWs0U1hCWE1ubEJFZ05CUmpRYUN3am9xZ1VRQWhvRFZWTkVPQnh3NktvRiIsW1siRVdSIiwiMjAyNy0wMS0wNSIsIkxIUiIsbnVsbCwiVUEiLCIxMjIiXV0sW1siTEhSIiwiMjAyNy0wMS0wOSIsIk9SWSIsbnVsbCwiVlkiLCI4MDU4Il1dLFtbIkNERyIsIjIwMjctMDEtMTQiLCJKRksiLG51bGwsIkFGIiwiNCJdXV0="
+    },
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "Aéroport de Paris-Charles de Gaulle",
+            "id": "CDG",
+            "date": "2027-01-14",
+            "time": "12:20"
+          },
+          "arrival_airport": {
+            "name": "Newark Liberty International Airport",
+            "id": "EWR",
+            "date": "2027-01-14",
+            "time": "14:45"
+          },
+          "duration": 505,
+          "airplane": "Airbus A350",
+          "airline": "Air France",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AF.png",
+          "travel_class": "Economy",
+          "flight_number": "AF 70",
+          "ticket_also_sold_by": [
+            "Delta"
+          ],
+          "extensions": [
+            "In-seat USB outlet",
+            "On-demand video",
+            "Seat type Average Legroom",
+            "Legroom 31 inches",
+            "Carbon emission: 316 kg"
+          ],
+          "detected_extensions": {
+            "has_in_seat_usb_outlet": true,
+            "has_on_demand_video": true,
+            "seat_type": "Average Legroom",
+            "legroom_short": "31 in",
+            "legroom_long": "31 inches",
+            "carbon_emission": 316
+          }
+        }
+      ],
+      "total_duration": 505,
+      "carbon_emissions": {
+        "this_flight": 317000,
+        "typical_for_this_route": 374000,
+        "difference_percent": -15,
+        "lowest_route": 374000
+      },
+      "price": 874,
+      "type": "Multi city",
+      "extensions": [
+        "Ticket changes for a fee",
+        "Fare non-refundable, taxes may be refundable",
+        "Checked baggage for a fee",
+        "Carry-on bag for a fee"
+      ],
+      "baggage": {
+        "carry_on_bag": "for fee",
+        "checked_bag": "for fee"
+      },
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AF.png",
+      "booking_token": "WyJDalJJT0U5MmJtUjVaVkUwZHpoQlEyZDVZVUZDUnkwdExTMHRMUzB0TFhaMGNXRXhORUZCUVVGQlIzTkdTRWs0U1hCWE1ubEJFZ1JCUmpjd0dnc0k2S29GRUFJYUExVlRSRGdjY09pcUJRPT0iLFtbIkVXUiIsIjIwMjctMDEtMDUiLCJMSFIiLG51bGwsIlVBIiwiMTIyIl1dLFtbIkxIUiIsIjIwMjctMDEtMDkiLCJPUlkiLG51bGwsIlZZIiwiODA1OCJdXSxbWyJDREciLCIyMDI3LTAxLTE0IiwiRVdSIixudWxsLCJBRiIsIjcwIl1dXQ=="
+    },
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "Aéroport de Paris-Charles de Gaulle",
+            "id": "CDG",
+            "date": "2027-01-14",
+            "time": "13:30"
+          },
+          "arrival_airport": {
+            "name": "John F. Kennedy International Airport",
+            "id": "JFK",
+            "date": "2027-01-14",
+            "time": "16:00"
+          },
+          "duration": 510,
+          "airplane": "Boeing 777",
+          "airline": "Air France",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AF.png",
+          "travel_class": "Economy",
+          "flight_number": "AF 6",
+          "ticket_also_sold_by": [
+            "Delta"
+          ],
+          "extensions": [
+            "In-seat USB outlet",
+            "On-demand video",
+            "Seat type Average Legroom",
+            "Legroom 31 inches",
+            "Carbon emission: 344 kg"
+          ],
+          "detected_extensions": {
+            "has_in_seat_usb_outlet": true,
+            "has_on_demand_video": true,
+            "seat_type": "Average Legroom",
+            "legroom_short": "31 in",
+            "legroom_long": "31 inches",
+            "carbon_emission": 344
+          }
+        }
+      ],
+      "total_duration": 510,
+      "carbon_emissions": {
+        "this_flight": 345000,
+        "typical_for_this_route": 374000,
+        "difference_percent": -8,
+        "lowest_route": 374000
+      },
+      "price": 874,
+      "type": "Multi city",
+      "extensions": [
+        "Ticket changes for a fee",
+        "Fare non-refundable, taxes may be refundable",
+        "Checked baggage for a fee",
+        "Carry-on bag for a fee"
+      ],
+      "baggage": {
+        "carry_on_bag": "for fee",
+        "checked_bag": "for fee"
+      },
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AF.png",
+      "booking_token": "WyJDalJJT0U5MmJtUjVaVkUwZHpoQlEyZDVZVUZDUnkwdExTMHRMUzB0TFhaMGNXRXhORUZCUVVGQlIzTkdTRWs0U1hCWE1ubEJFZ05CUmpZYUN3am9xZ1VRQWhvRFZWTkVPQnh3NktvRiIsW1siRVdSIiwiMjAyNy0wMS0wNSIsIkxIUiIsbnVsbCwiVUEiLCIxMjIiXV0sW1siTEhSIiwiMjAyNy0wMS0wOSIsIk9SWSIsbnVsbCwiVlkiLCI4MDU4Il1dLFtbIkNERyIsIjIwMjctMDEtMTQiLCJKRksiLG51bGwsIkFGIiwiNiJdXV0="
+    },
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "Aéroport de Paris-Charles de Gaulle",
+            "id": "CDG",
+            "date": "2027-01-14",
+            "time": "11:20"
+          },
+          "arrival_airport": {
+            "name": "John F. Kennedy International Airport",
+            "id": "JFK",
+            "date": "2027-01-14",
+            "time": "14:12"
+          },
+          "duration": 532,
+          "airplane": "Airbus A321neo",
+          "airline": "JetBlue",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/B6.png",
+          "travel_class": "Economy",
+          "flight_number": "B6 1408",
+          "extensions": [
+            "Power and USB outlets",
+            "On-demand video",
+            "Wi-Fi free",
+            "Seat type Above Average Legroom",
+            "Legroom 32 inches",
+            "Carbon emission: 562 kg"
+          ],
+          "detected_extensions": {
+            "has_power_and_usb_outlets": true,
+            "has_on_demand_video": true,
+            "wifi": "free",
+            "seat_type": "Above Average Legroom",
+            "legroom_short": "32 in",
+            "legroom_long": "32 inches",
+            "carbon_emission": 562
+          }
+        }
+      ],
+      "total_duration": 532,
+      "carbon_emissions": {
+        "this_flight": 562000,
+        "typical_for_this_route": 374000,
+        "difference_percent": 50,
+        "lowest_route": 374000
+      },
+      "price": 998,
+      "type": "Multi city",
+      "extensions": [
+        "Ticket changes for a fee",
+        "Fare non-refundable, taxes may be refundable",
+        "Checked baggage for a fee",
+        "Carry-on bag for a fee"
+      ],
+      "baggage": {
+        "carry_on_bag": "for fee",
+        "checked_bag": "for fee"
+      },
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/B6.png",
+      "booking_token": "WyJDalJJT0U5MmJtUjVaVkUwZHpoQlEyZDVZVUZDUnkwdExTMHRMUzB0TFhaMGNXRXhORUZCUVVGQlIzTkdTRWs0U1hCWE1ubEJFZ1pDTmpFME1EZ2FDd2pZaXdZUUFob0RWVk5FT0J4dzJJc0ciLFtbIkVXUiIsIjIwMjctMDEtMDUiLCJMSFIiLG51bGwsIlVBIiwiMTIyIl1dLFtbIkxIUiIsIjIwMjctMDEtMDkiLCJPUlkiLG51bGwsIlZZIiwiODA1OCJdXSxbWyJDREciLCIyMDI3LTAxLTE0IiwiSkZLIixudWxsLCJCNiIsIjE0MDgiXV1d"
+    },
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "Aéroport de Paris-Charles de Gaulle",
+            "id": "CDG",
+            "date": "2027-01-14",
+            "time": "09:25"
+          },
+          "arrival_airport": {
+            "name": "Newark Liberty International Airport",
+            "id": "EWR",
+            "date": "2027-01-14",
+            "time": "11:50"
+          },
+          "duration": 505,
+          "airplane": "Boeing 777",
+          "airline": "United",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/UA.png",
+          "travel_class": "Economy",
+          "flight_number": "UA 56",
+          "ticket_also_sold_by": [
+            "Lufthansa",
+            "Brussels Airlines"
+          ],
+          "extensions": [
+            "Power and USB outlets",
+            "On-demand video",
+            "Wi-Fi for fee",
+            "Seat type Average Legroom",
+            "Legroom 31 inches",
+            "Carbon emission: 417 kg"
+          ],
+          "detected_extensions": {
+            "has_power_and_usb_outlets": true,
+            "has_on_demand_video": true,
+            "wifi": "for fee",
+            "seat_type": "Average Legroom",
+            "legroom_short": "31 in",
+            "legroom_long": "31 inches",
+            "carbon_emission": 417
+          }
+        }
+      ],
+      "total_duration": 505,
+      "carbon_emissions": {
+        "this_flight": 417000,
+        "typical_for_this_route": 374000,
+        "difference_percent": 11,
+        "lowest_route": 374000
+      },
+      "price": 2055,
+      "type": "Multi city",
+      "extensions": [
+        "Ticket changes for a fee",
+        "Fare non-refundable, taxes may be refundable",
+        "Checked baggage for a fee",
+        "Carry-on bag for a fee"
+      ],
+      "baggage": {
+        "carry_on_bag": "for fee",
+        "checked_bag": "for fee"
+      },
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/UA.png",
+      "booking_token": "WyJDalJJT0U5MmJtUjVaVkUwZHpoQlEyZDVZVUZDUnkwdExTMHRMUzB0TFhaMGNXRXhORUZCUVVGQlIzTkdTRWs0U1hCWE1ubEJFZ1JWUVRVMkdnc0l2TVVNRUFJYUExVlRSRGdjY0x6RkRBPT0iLFtbIkVXUiIsIjIwMjctMDEtMDUiLCJMSFIiLG51bGwsIlVBIiwiMTIyIl1dLFtbIkxIUiIsIjIwMjctMDEtMDkiLCJPUlkiLG51bGwsIlZZIiwiODA1OCJdXSxbWyJDREciLCIyMDI3LTAxLTE0IiwiRVdSIixudWxsLCJVQSIsIjU2Il1dXQ=="
+    },
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "Paris Orly Airport",
+            "id": "ORY",
+            "date": "2027-01-14",
+            "time": "10:30"
+          },
+          "arrival_airport": {
+            "name": "Newark Liberty International Airport",
+            "id": "EWR",
+            "date": "2027-01-14",
+            "time": "13:15"
+          },
+          "duration": 525,
+          "airplane": "Airbus A321neo",
+          "airline": "La Compagnie",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/B0.png",
+          "travel_class": "Economy",
+          "flight_number": "B0 100",
+          "is_often_delayed": true,
+          "extensions": [
+            "Power and USB outlets",
+            "On-demand video",
+            "Wi-Fi free",
+            "Seat type Lie Flat",
+            "Carbon emission: 606 kg"
+          ],
+          "detected_extensions": {
+            "has_power_and_usb_outlets": true,
+            "has_on_demand_video": true,
+            "wifi": "free",
+            "seat_type": "Lie Flat",
+            "carbon_emission": 606
+          }
+        }
+      ],
+      "total_duration": 525,
+      "carbon_emissions": {
+        "this_flight": 607000,
+        "typical_for_this_route": 374000,
+        "difference_percent": 62,
+        "lowest_route": 374000
+      },
+      "price": 2323,
+      "type": "Multi city",
+      "extensions": [
+        "Ticket changes for a fee",
+        "Fare non-refundable, taxes may be refundable",
+        "Checked baggage for a fee",
+        "Carry-on bag for a fee"
+      ],
+      "baggage": {
+        "carry_on_bag": "for fee",
+        "checked_bag": "for fee"
+      },
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/B0.png",
+      "booking_token": "WyJDalJJT0U5MmJtUjVaVkUwZHpoQlEyZDVZVUZDUnkwdExTMHRMUzB0TFhaMGNXRXhORUZCUVVGQlIzTkdTRWs0U1hCWE1ubEJFZ1ZDTURFd01Cb0xDT3lXRGhBQ0dnTlZVMFE0SEhEc2xnND0iLFtbIkVXUiIsIjIwMjctMDEtMDUiLCJMSFIiLG51bGwsIlVBIiwiMTIyIl1dLFtbIkxIUiIsIjIwMjctMDEtMDkiLCJPUlkiLG51bGwsIlZZIiwiODA1OCJdXSxbWyJPUlkiLCIyMDI3LTAxLTE0IiwiRVdSIixudWxsLCJCMCIsIjEwMCJdXV0="
+    }
+  ],
+  "airports": [
+    {
+      "departure": [
+        {
+          "airport": {
+            "id": "JFK",
+            "name": "John F. Kennedy International Airport"
+          },
+          "city": "New York",
+          "country": "United States",
+          "country_code": "US",
+          "image": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcRa1dwH1NZQk4dsbPiyA9Vrq2RX75jXSZ-OkHn7NkLHl-11HercqDXoZ4p2cDxJkH6vca2degawrCzHEQ",
+          "thumbnail": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQEaUa9NsdPWGpAUGkTApkZDT_4M6_6V8wTcC0v1b1wJAJX-BuMSiipXbsoznGgcI1xLOc5QiTcR_xovexgjdOz0gqQe0tRQ9h0bUkZ07Q"
+        },
+        {
+          "airport": {
+            "id": "EWR",
+            "name": "Newark Liberty International Airport"
+          },
+          "city": "Newark",
+          "country": "United States",
+          "country_code": "US",
+          "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTSVSHJRQUacgXbljJliEfJExMDrajiLyrcqBpTDrFTtTWEhRRBMAEO76FQqrFPU2swFT3Q3cWcbeO8Tw",
+          "thumbnail": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS9KX68DZATrjpYLwlFuQnsmKfJm83iKCU4RTdjv2smpe3tVA1YxHO0Km6xxwD3wnL3-ZI3zci1P1l7bhflFCeqnfmxbEUMppLOK-BiaaQ"
+        },
+        {
+          "airport": {
+            "id": "LGA",
+            "name": "LaGuardia Airport"
+          },
+          "city": "New York",
+          "country": "United States",
+          "country_code": "US",
+          "image": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcRa1dwH1NZQk4dsbPiyA9Vrq2RX75jXSZ-OkHn7NkLHl-11HercqDXoZ4p2cDxJkH6vca2degawrCzHEQ",
+          "thumbnail": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQEaUa9NsdPWGpAUGkTApkZDT_4M6_6V8wTcC0v1b1wJAJX-BuMSiipXbsoznGgcI1xLOc5QiTcR_xovexgjdOz0gqQe0tRQ9h0bUkZ07Q"
+        }
+      ],
+      "arrival": [
+        {
+          "airport": {
+            "id": "LHR",
+            "name": "Heathrow Airport"
+          },
+          "city": "London",
+          "country": "United Kingdom",
+          "country_code": "GB",
+          "image": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcRpN9RbtOSTDqKIPxWc_D6rdSysaWVh6d-NW7yz7yFXKRwh5RN5BpNIoXEwH1XVcFdLWqn6Sm8_Y_zmeg",
+          "thumbnail": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQYH83YXny8hR4M7k5BMFq4vUT6LNtVABQzgs2pg-hcpSZq3oMBOQK3xh591AAJv2Qx4uvFZUGqOVt4kuoCUOklISunmndJleOoSef_7QE"
+        },
+        {
+          "airport": {
+            "id": "LGW",
+            "name": "London Gatwick Airport"
+          },
+          "city": "London",
+          "country": "United Kingdom",
+          "country_code": "GB",
+          "image": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcRpN9RbtOSTDqKIPxWc_D6rdSysaWVh6d-NW7yz7yFXKRwh5RN5BpNIoXEwH1XVcFdLWqn6Sm8_Y_zmeg",
+          "thumbnail": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQYH83YXny8hR4M7k5BMFq4vUT6LNtVABQzgs2pg-hcpSZq3oMBOQK3xh591AAJv2Qx4uvFZUGqOVt4kuoCUOklISunmndJleOoSef_7QE"
+        }
+      ]
+    },
+    {
+      "departure": [
+        {
+          "airport": {
+            "id": "LHR",
+            "name": "Heathrow Airport"
+          },
+          "city": "London",
+          "country": "United Kingdom",
+          "country_code": "GB",
+          "image": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcRpN9RbtOSTDqKIPxWc_D6rdSysaWVh6d-NW7yz7yFXKRwh5RN5BpNIoXEwH1XVcFdLWqn6Sm8_Y_zmeg",
+          "thumbnail": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQYH83YXny8hR4M7k5BMFq4vUT6LNtVABQzgs2pg-hcpSZq3oMBOQK3xh591AAJv2Qx4uvFZUGqOVt4kuoCUOklISunmndJleOoSef_7QE"
+        },
+        {
+          "airport": {
+            "id": "LGW",
+            "name": "London Gatwick Airport"
+          },
+          "city": "London",
+          "country": "United Kingdom",
+          "country_code": "GB",
+          "image": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcRpN9RbtOSTDqKIPxWc_D6rdSysaWVh6d-NW7yz7yFXKRwh5RN5BpNIoXEwH1XVcFdLWqn6Sm8_Y_zmeg",
+          "thumbnail": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQYH83YXny8hR4M7k5BMFq4vUT6LNtVABQzgs2pg-hcpSZq3oMBOQK3xh591AAJv2Qx4uvFZUGqOVt4kuoCUOklISunmndJleOoSef_7QE"
+        }
+      ],
+      "arrival": [
+        {
+          "airport": {
+            "id": "CDG",
+            "name": "Aéroport de Paris-Charles de Gaulle"
+          },
+          "city": "Paris",
+          "country": "France",
+          "country_code": "FR",
+          "image": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcQGx8ii2KbSDdbdzfKye5oDN2bwBA6audqI7XUEf2iMRZezpn_ZbQe1ZIuvUSH-8XOMe958umDwSsAF1w",
+          "thumbnail": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcSyQJ-woNs0iO22mPSkmRUM5gcsTbbYeypQ6BBTeFxXr90mqTxZl57Fdq2CDuLn4w7cKZ8TT9_zZhOpF57rIpA7yWKQnqKvkKIf9Y-qJDo"
+        },
+        {
+          "airport": {
+            "id": "ORY",
+            "name": "Paris Orly Airport"
+          },
+          "city": "Paris",
+          "country": "France",
+          "country_code": "FR",
+          "image": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcQGx8ii2KbSDdbdzfKye5oDN2bwBA6audqI7XUEf2iMRZezpn_ZbQe1ZIuvUSH-8XOMe958umDwSsAF1w",
+          "thumbnail": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcSyQJ-woNs0iO22mPSkmRUM5gcsTbbYeypQ6BBTeFxXr90mqTxZl57Fdq2CDuLn4w7cKZ8TT9_zZhOpF57rIpA7yWKQnqKvkKIf9Y-qJDo"
+        }
+      ]
+    },
+    {
+      "departure": [
+        {
+          "airport": {
+            "id": "CDG",
+            "name": "Aéroport de Paris-Charles de Gaulle"
+          },
+          "city": "Paris",
+          "country": "France",
+          "country_code": "FR",
+          "image": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcQGx8ii2KbSDdbdzfKye5oDN2bwBA6audqI7XUEf2iMRZezpn_ZbQe1ZIuvUSH-8XOMe958umDwSsAF1w",
+          "thumbnail": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcSyQJ-woNs0iO22mPSkmRUM5gcsTbbYeypQ6BBTeFxXr90mqTxZl57Fdq2CDuLn4w7cKZ8TT9_zZhOpF57rIpA7yWKQnqKvkKIf9Y-qJDo"
+        },
+        {
+          "airport": {
+            "id": "ORY",
+            "name": "Paris Orly Airport"
+          },
+          "city": "Paris",
+          "country": "France",
+          "country_code": "FR",
+          "image": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcQGx8ii2KbSDdbdzfKye5oDN2bwBA6audqI7XUEf2iMRZezpn_ZbQe1ZIuvUSH-8XOMe958umDwSsAF1w",
+          "thumbnail": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcSyQJ-woNs0iO22mPSkmRUM5gcsTbbYeypQ6BBTeFxXr90mqTxZl57Fdq2CDuLn4w7cKZ8TT9_zZhOpF57rIpA7yWKQnqKvkKIf9Y-qJDo"
+        }
+      ],
+      "arrival": [
+        {
+          "airport": {
+            "id": "JFK",
+            "name": "John F. Kennedy International Airport"
+          },
+          "city": "New York",
+          "country": "United States",
+          "country_code": "US",
+          "image": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcRa1dwH1NZQk4dsbPiyA9Vrq2RX75jXSZ-OkHn7NkLHl-11HercqDXoZ4p2cDxJkH6vca2degawrCzHEQ",
+          "thumbnail": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQEaUa9NsdPWGpAUGkTApkZDT_4M6_6V8wTcC0v1b1wJAJX-BuMSiipXbsoznGgcI1xLOc5QiTcR_xovexgjdOz0gqQe0tRQ9h0bUkZ07Q"
+        },
+        {
+          "airport": {
+            "id": "EWR",
+            "name": "Newark Liberty International Airport"
+          },
+          "city": "Newark",
+          "country": "United States",
+          "country_code": "US",
+          "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTSVSHJRQUacgXbljJliEfJExMDrajiLyrcqBpTDrFTtTWEhRRBMAEO76FQqrFPU2swFT3Q3cWcbeO8Tw",
+          "thumbnail": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS9KX68DZATrjpYLwlFuQnsmKfJm83iKCU4RTdjv2smpe3tVA1YxHO0Km6xxwD3wnL3-ZI3zci1P1l7bhflFCeqnfmxbEUMppLOK-BiaaQ"
+        },
+        {
+          "airport": {
+            "id": "LGA",
+            "name": "LaGuardia Airport"
+          },
+          "city": "New York",
+          "country": "United States",
+          "country_code": "US",
+          "image": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcRa1dwH1NZQk4dsbPiyA9Vrq2RX75jXSZ-OkHn7NkLHl-11HercqDXoZ4p2cDxJkH6vca2degawrCzHEQ",
+          "thumbnail": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQEaUa9NsdPWGpAUGkTApkZDT_4M6_6V8wTcC0v1b1wJAJX-BuMSiipXbsoznGgcI1xLOc5QiTcR_xovexgjdOz0gqQe0tRQ9h0bUkZ07Q"
+        }
+      ]
+    }
+  ],
+  "airlines": {
+    "alliances": [
+      {
+        "code": "ONEWORLD",
+        "name": "Oneworld"
+      },
+      {
+        "code": "SKYTEAM",
+        "name": "SkyTeam"
+      },
+      {
+        "code": "STAR_ALLIANCE",
+        "name": "Star Alliance"
+      }
+    ],
+    "airlines": [
+      {
+        "code": "A3",
+        "name": "Aegean"
+      },
+      {
+        "code": "EI",
+        "name": "Aer Lingus"
+      },
+      {
+        "code": "AC",
+        "name": "Air Canada"
+      },
+      {
+        "code": "UX",
+        "name": "Air Europa"
+      },
+      {
+        "code": "AF",
+        "name": "Air France"
+      },
+      {
+        "code": "JU",
+        "name": "Air Serbia"
+      },
+      {
+        "code": "TS",
+        "name": "Air Transat"
+      },
+      {
+        "code": "AS",
+        "name": "Alaska"
+      },
+      {
+        "code": "AA",
+        "name": "American"
+      },
+      {
+        "code": "OS",
+        "name": "Austrian"
+      },
+      {
+        "code": "S4",
+        "name": "Azores Airlines"
+      },
+      {
+        "code": "BA",
+        "name": "British Airways"
+      },
+      {
+        "code": "SN",
+        "name": "Brussels Airlines"
+      },
+      {
+        "code": "DE",
+        "name": "Condor"
+      },
+      {
+        "code": "DL",
+        "name": "Delta"
+      },
+      {
+        "code": "MS",
+        "name": "EgyptAir"
+      },
+      {
+        "code": "AY",
+        "name": "Finnair"
+      },
+      {
+        "code": "IB",
+        "name": "Iberia"
+      },
+      {
+        "code": "FI",
+        "name": "Icelandair"
+      },
+      {
+        "code": "6E",
+        "name": "IndiGo"
+      },
+      {
+        "code": "AZ",
+        "name": "ITA"
+      },
+      {
+        "code": "B6",
+        "name": "JetBlue"
+      },
+      {
+        "code": "KQ",
+        "name": "Kenya Airways"
+      },
+      {
+        "code": "KL",
+        "name": "KLM"
+      },
+      {
+        "code": "B0",
+        "name": "La Compagnie"
+      },
+      {
+        "code": "LL",
+        "name": "LEVEL"
+      },
+      {
+        "code": "LO",
+        "name": "LOT"
+      },
+      {
+        "code": "LH",
+        "name": "Lufthansa"
+      },
+      {
+        "code": "MH",
+        "name": "Malaysia Airlines"
+      },
+      {
+        "code": "PD",
+        "name": "Porter Airlines"
+      },
+      {
+        "code": "QR",
+        "name": "Qatar Airways"
+      },
+      {
+        "code": "AT",
+        "name": "Royal Air Maroc"
+      },
+      {
+        "code": "SK",
+        "name": "Scandinavian Airlines"
+      },
+      {
+        "code": "SQ",
+        "name": "Singapore Airlines"
+      },
+      {
+        "code": "LX",
+        "name": "SWISS"
+      },
+      {
+        "code": "TP",
+        "name": "Tap Air Portugal"
+      },
+      {
+        "code": "TG",
+        "name": "THAI"
+      },
+      {
+        "code": "TK",
+        "name": "Turkish Airlines"
+      },
+      {
+        "code": "UA",
+        "name": "United"
+      },
+      {
+        "code": "VS",
+        "name": "Virgin Atlantic"
+      },
+      {
+        "code": "VY",
+        "name": "Vueling"
+      },
+      {
+        "code": "WS",
+        "name": "WestJet"
+      }
+    ],
+    "hubs": [
+      {
+        "code": "AMS",
+        "name": "Amsterdam"
+      },
+      {
+        "code": "ATH",
+        "name": "Athens"
+      },
+      {
+        "code": "BCN",
+        "name": "Barcelona"
+      },
+      {
+        "code": "BOS",
+        "name": "Boston"
+      },
+      {
+        "code": "BRU",
+        "name": "Brussels"
+      },
+      {
+        "code": "CAI",
+        "name": "Cairo"
+      },
+      {
+        "code": "YYC",
+        "name": "Calgary"
+      },
+      {
+        "code": "CMN",
+        "name": "Casablanca"
+      },
+      {
+        "code": "CLT",
+        "name": "Charlotte"
+      },
+      {
+        "code": "ORD",
+        "name": "Chicago"
+      },
+      {
+        "code": "CVG",
+        "name": "Cincinnati"
+      },
+      {
+        "code": "CPH",
+        "name": "Copenhagen"
+      },
+      {
+        "code": "DTW",
+        "name": "Detroit"
+      },
+      {
+        "code": "DUB",
+        "name": "Dublin"
+      },
+      {
+        "code": "FRA",
+        "name": "Frankfurt am Main"
+      },
+      {
+        "code": "GVA",
+        "name": "Geneva"
+      },
+      {
+        "code": "HEL",
+        "name": "Helsinki"
+      },
+      {
+        "code": "IST",
+        "name": "Istanbul"
+      },
+      {
+        "code": "LIS",
+        "name": "Lisbon"
+      },
+      {
+        "code": "LHR",
+        "name": "London"
+      },
+      {
+        "code": "MAD",
+        "name": "Madrid"
+      },
+      {
+        "code": "YUL",
+        "name": "Montreal"
+      },
+      {
+        "code": "OPO",
+        "name": "Porto"
+      },
+      {
+        "code": "YQB",
+        "name": "Québec City"
+      },
+      {
+        "code": "KEF",
+        "name": "Reykjavík"
+      },
+      {
+        "code": "FCO",
+        "name": "Rome"
+      },
+      {
+        "code": "ARN",
+        "name": "Stockholm"
+      },
+      {
+        "code": "YTZ",
+        "name": "Toronto"
+      },
+      {
+        "code": "YYZ",
+        "name": "Toronto"
+      },
+      {
+        "code": "VIE",
+        "name": "Vienna"
+      },
+      {
+        "code": "WAW",
+        "name": "Warsaw"
+      },
+      {
+        "code": "IAD",
+        "name": "Washington"
+      },
+      {
+        "code": "ZRH",
+        "name": "Zürich"
+      }
+    ]
+  },
+  "baggage_allowance_links": [
+    {
+      "airline_code": "EI",
+      "airline": "Aer Lingus",
+      "url": "http://www.aerlingus.com/help/help/baggageinformation/"
+    },
+    {
+      "airline_code": "AF",
+      "airline": "Air France",
+      "url": "https://wwws.airfrance.us/information/bagages"
+    },
+    {
+      "airline_code": "AA",
+      "airline": "American",
+      "url": "https://www.aa.com/i18n/travel-info/baggage/checked-baggage-policy.jsp"
+    },
+    {
+      "airline_code": "DL",
+      "airline": "Delta",
+      "url": "https://www.delta.com/content/www/en_US/traveling-with-us/baggage/before-your-trip/checked.html"
+    },
+    {
+      "airline_code": "IB",
+      "airline": "Iberia",
+      "url": "https://www.iberia.com/us/baggage/?language=en"
+    },
+    {
+      "airline_code": "B6",
+      "airline": "JetBlue",
+      "url": "https://www.jetblue.com/at-the-airport/baggage-information?intcmp=hd_info"
+    },
+    {
+      "airline_code": "LL",
+      "airline": "LEVEL",
+      "url": "https://www.flylevel.com/info/en-us/services/baggage"
+    },
+    {
+      "airline_code": "TP",
+      "airline": "Tap Air Portugal",
+      "url": "https://www.flytap.com/en-us/baggage"
+    },
+    {
+      "airline_code": "UA",
+      "airline": "United",
+      "url": "https://www.united.com/en/US/fly/travel/baggage/baggage-information-and-fees.html"
+    },
+    {
+      "airline_code": "VY",
+      "airline": "Vueling",
+      "url": "http://www.vueling.com/en/vueling-services/prepare-your-trip/luggage/checked-baggage"
+    }
+  ],
+  "passenger_assistance_links": [
+    {
+      "airline_code": "EI",
+      "airline": "Aer Lingus",
+      "url": "https://www.aerlingus.com/travel-information/special-assistance/"
+    },
+    {
+      "airline_code": "AA",
+      "airline": "American",
+      "url": "https://www.aa.com/i18n/travel-info/special-assistance/special-assistance.jsp"
+    },
+    {
+      "airline_code": "DL",
+      "airline": "Delta",
+      "url": "https://www.delta.com/us/en/accessible-travel-services/overview"
+    },
+    {
+      "airline_code": "AF",
+      "airline": "Air France",
+      "url": "https://wwws.airfrance.fr/en/information/passagers"
+    },
+    {
+      "airline_code": "VY",
+      "airline": "Vueling",
+      "url": "https://www.vueling.com/en/flying-information/passengers"
+    },
+    {
+      "airline_code": "TP",
+      "airline": "Tap Air Portugal",
+      "url": "https://www.flytap.com/en-pt/information/special-needs"
+    },
+    {
+      "airline_code": "IB",
+      "airline": "Iberia",
+      "url": "https://www.iberia.com/es/fly-with-iberia/special-needs/"
+    },
+    {
+      "airline_code": "B6",
+      "airline": "JetBlue",
+      "url": "https://www.jetblue.com/at-the-airport/accessibility-assistance"
+    },
+    {
+      "airline_code": "UA",
+      "airline": "United",
+      "url": "https://www.united.com/en/us/fly/travel/accessibility-and-assistance.html"
+    },
+    {
+      "airline_code": "B0",
+      "airline": "La Compagnie",
+      "url": "https://www.lacompagnie.com/en/plan/special-services/"
+    }
+  ]
+}
