@@ -843,9 +843,10 @@ def flat_query(mc_query, count):
 
 
 def step_tokens(api, step):
-    """Departure tokens of the requests that answered step `step` (1-based), in order."""
+    """Departure tokens sent to get step `step` (2-based: step 1 needs none), in order. A token
+    carries the step of the response that issued it, so step 2 is asked with "t0." tokens."""
     return [r.url.params["departure_token"] for r in api.requests
-            if r.url.params.get("departure_token", "").startswith(f"t{step - 1}.")]
+            if r.url.params.get("departure_token", "").startswith(f"t{step - 2}.")]
 
 
 async def test_multi_city_request_parameters(provider, api, mc_query):

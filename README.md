@@ -6,7 +6,7 @@ An [MCP](https://modelcontextprotocol.io) server that lets AI assistants (Claude
 
 The assistant calls FastFlightsMCP's tools, gets structured flight data back, and reasons over it: comparing options, flexing dates, and explaining trade-offs.
 
-> **Status:** Week 9. `search_flights` and `search_airports` are implemented and tested, and were run live through Claude Code (see `CHECKS.md`). `search_multi_city`, `find_cheapest_dates`, `get_price_insight`, caching, hosting and the `uvx` package are not implemented yet; the sections for them below describe the plan. `search_flights` supports adults only for now: children and infants are rejected.
+> **Status:** Week 9. `search_flights` and `search_airports` are implemented and tested, and were run live through Claude Code (see `CHECKS.md`). `search_multi_city` is implemented and tested offline (complete trips only, not yet run live); `find_cheapest_dates`, `get_price_insight`, caching, hosting and the `uvx` package are not implemented yet; the sections for them below describe the plan. `search_flights` supports adults only for now: children and infants are rejected.
 
 ---
 
@@ -82,7 +82,16 @@ Search one-way or round-trip flights for specific dates.
 Unknown arguments are rejected. Prices are per person. A search stops after 10 upstream requests, and the result says so when that may have hidden better options.
 
 ### `search_multi_city`
-Search an itinerary with 2 to 6 legs (e.g. `JFK→LHR`, `LHR→CDG`, `CDG→JFK`).
+Search a trip of 2 to 6 legs (e.g. `JFK→LHR`, `LHR→CDG`, `CDG→JFK`) and get up to five complete trips with one price for the whole trip.
+
+| Param            | Type                    | Required | Notes                                         |
+| ---------------- | ----------------------- | -------- | --------------------------------------------- |
+| `legs`           | list of 2 to 6 objects  | yes      | In travel order: `origin` and `destination` (1 to 10 IATA codes each), `depart_date` (`YYYY-MM-DD`), optional `max_stops` for that leg |
+| `cabin`          | `economy` \| `premium_economy` \| `business` \| `first` | yes | One cabin for every leg |
+| `adults`, `currency`, `budget`, `strict_budget` | as in `search_flights` | no | Budget is per person for the whole trip |
+| `max_stops`      | int, 0 to 2             | no       | Per leg, unless a leg sets its own            |
+
+Each leg must start in the city the previous one ended in; changing airports within a city needs 24 hours in between, and the result says so. The search follows SearchApi's one-request-per-leg chain and keeps the best 3 partial trips at each step within 10 requests per call, so it says when a search is not exhaustive. Customization of a single leg, children and infants are not supported yet.
 
 ### `find_cheapest_dates`
 Given a route and a date window (e.g. "any 7-night trip in March"), scan dates and return the cheapest departure/return combinations. Useful for flexible travelers.
@@ -237,7 +246,7 @@ Week 9 follows the lab's commit sequence: working rules, approved plan, failing 
 
 - [x] **v0.1** Core server, `search_flights` (one-way + round-trip), `search_airports` (Week 9; one-way verified live, round trips verified only against recorded responses)
 - [ ] **v0.2** Caching, rate limiting, and provider-response handling with fixture-based tests
-- [ ] **v0.3** `find_cheapest_dates` and `search_multi_city`
+- [ ] **v0.3** `find_cheapest_dates` and `search_multi_city` (`search_multi_city` complete-trip search is implemented; per-leg customization is not)
 - [ ] **v0.4** Price insights, streamable HTTP transport for remote hosting
 - [ ] **Later** Price-watch alerts, alternate airports, and baggage/fare-class details
 
