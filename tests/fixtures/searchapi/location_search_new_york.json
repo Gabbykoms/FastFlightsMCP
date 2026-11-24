@@ -1,0 +1,129 @@
+{
+  "search_metadata": {
+    "id": "search_REDACTED",
+    "status": "Success",
+    "created_at": "2026-11-23T18:12:44Z",
+    "request_time_taken": 0.47,
+    "parsing_time_taken": 0.0,
+    "total_time_taken": 0.47,
+    "request_url": null,
+    "html_url": "https://www.searchapi.io/api/v1/searches/search_REDACTED.html",
+    "json_url": "https://www.searchapi.io/api/v1/searches/search_REDACTED"
+  },
+  "search_parameters": {
+    "engine": "google_flights_location_search",
+    "q": "New York",
+    "hl": "en-us"
+  },
+  "locations": [
+    {
+      "type": "city",
+      "kgmid": "/m/02_286",
+      "full_name": "New York",
+      "short_name": "New York",
+      "description": "City in New York State",
+      "airports": [
+        {
+          "type": "airport",
+          "kgmid": "/m/02_286",
+          "airport_code": "JFK",
+          "title": "John F. Kennedy International Airport",
+          "city": "New York",
+          "distance": "12 mi"
+        },
+        {
+          "type": "airport",
+          "kgmid": "/m/02_286",
+          "airport_code": "LGA",
+          "title": "LaGuardia Airport",
+          "city": "New York",
+          "distance": "8 mi"
+        },
+        {
+          "type": "airport",
+          "kgmid": "/m/0hptm",
+          "airport_code": "EWR",
+          "title": "Newark Liberty International Airport",
+          "city": "Newark",
+          "distance": "8 mi"
+        }
+      ]
+    },
+    {
+      "type": "city",
+      "kgmid": "/m/019fh",
+      "full_name": "Buffalo, New York",
+      "short_name": "Buffalo",
+      "description": "City in New York State",
+      "airports": [
+        {
+          "type": "airport",
+          "kgmid": "/m/019fh",
+          "airport_code": "BUF",
+          "title": "Buffalo Niagara International Airport",
+          "city": "Buffalo",
+          "distance": "8 mi"
+        }
+      ]
+    },
+    {
+      "type": "city",
+      "kgmid": "/m/0y3k9",
+      "full_name": "Niagara Falls, New York",
+      "short_name": "Niagara Falls",
+      "description": "City in New York State",
+      "airports": [
+        {
+          "type": "airport",
+          "kgmid": "/m/019fh",
+          "airport_code": "BUF",
+          "title": "Buffalo Niagara International Airport",
+          "city": "Buffalo",
+          "distance": "19 mi"
+        },
+        {
+          "type": "airport",
+          "kgmid": "/m/0y3k9",
+          "airport_code": "IAG",
+          "title": "Niagara Falls International Airport",
+          "city": "Niagara Falls",
+          "distance": "4 mi"
+        }
+      ]
+    },
+    {
+      "type": "city",
+      "kgmid": "/m/0y1rf",
+      "full_name": "Rochester, New York",
+      "short_name": "Rochester",
+      "description": "City in New York State",
+      "airports": [
+        {
+          "type": "airport",
+          "kgmid": "/m/0y1rf",
+          "airport_code": "ROC",
+          "title": "Frederick Douglass Greater Rochester International Airport",
+          "city": "Rochester",
+          "distance": "4 mi"
+        }
+      ]
+    },
+    {
+      "type": "city",
+      "kgmid": "/m/0dq16",
+      "full_name": "Albany, New York",
+      "short_name": "Albany",
+      "description": "City in New York State",
+      "airports": [
+        {
+          "type": "airport",
+          "kgmid": "/m/0dq16",
+          "airport_code": "ALB",
+          "title": "Albany International Airport",
+          "city": "Albany",
+          "distance": "7 mi"
+        }
+      ]
+    }
+  ]
+}

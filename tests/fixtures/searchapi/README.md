@@ -12,6 +12,7 @@ requests; no tool code or model was involved.
 | `one_way_2_adults.json` | Same as `one_way.json` but `adults=2` (recorded 2026-11-23) | Same 5 options. See "Price basis". |
 | `one_way_1_adult_1_child.json` | Same as `one_way.json` but `adults=1`, `children=1` (recorded 2026-11-23) | Same 5 options. See "Price basis". |
 | `error_401_invalid_key.json` | HTTP 401 body returned for a rejected key (2026-11-22) | The raw file was overwritten by a later run; this is the body exactly as it was printed (33 bytes, no trailing newline). Not billed. |
+| `location_search_new_york.json` | `engine=google_flights_location_search`, `q=New York` (recorded 2026-11-23) | 5 places, each with a nested `airports` list (`airport_code`, `title`, `city`, `distance`) and no `country`. The same request with `query=` instead of `q=` returned HTTP 400 "Missing required parameter q.". |
 
 ## Sanitization
 
@@ -42,4 +43,4 @@ They show the provider's real response shape for these requests only. Times are
 local `date` plus `HH:MM` with no UTC offset. Nine of the 14 options have layovers.
 Not covered: empty results (what SearchApi returns when no flights exist is unknown),
 errors other than 401, multiple airports, infants, and round-trip pricing for more than
-one adult. Do not describe other behavior as provider-verified.
+one adult. Location Search is recorded for one query (a city name); airport-name queries are not recorded. Do not describe other behavior as provider-verified.

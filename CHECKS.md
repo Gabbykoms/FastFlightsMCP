@@ -146,6 +146,27 @@
   `httpx.get` inside an async tool, empty results cached, no stable error categories, and a cache
   with no expiry.
 
+### `search_airports`: live failure in Claude Code, the `q` parameter and the real mapping (2026-11-23)
+
+- In the first Claude Code session (plain `claude`, not `orclaude`; transcript in
+  `transcripts/week09-claude-code-1-airport-lookup-failed.txt`, committed with the Week 9 PR) the model called `search_airports` 4 times and every call
+  failed with "provider returned an error". It then used airport codes it already knew, and
+  `search_flights` worked live for JFK, EWR and LGA to LIS. That also showed Claude Code passes the
+  launching shell's `SEARCHAPI_API_KEY` to the server; `.mcp.json` has no `env` entry.
+- Cause, from one diagnostic request: HTTP **400** `{"error": "Missing required parameter q."}`.
+  `_location_search` sent the text as `query`. The tests replaced `_location_search` with a fake, so
+  none could catch it. Failed requests are not billed.
+- With `q` the response is HTTP 200, but it did not match the tool's mapping: places with nested
+  `airports`, no `country`. The tool would have returned five blank matches as a success and
+  cached them. Fixing `q` alone was therefore unsafe; the mapping was redone in the same change.
+- Tests first (`4919994` and `53d70c9` failing, `3885cde` fix): `python3 -m pytest tests -q`:
+  **163 passed** (154 on `main` plus 9). Six deliberate breaks (last place used, no country, duplicates
+  kept, blank result on an unreadable shape, response shape unchecked, `query` again) were each caught.
+- Recording: `tests/fixtures/searchapi/location_search_new_york.json`, one billed request.
+- **Not verified:** airport-name queries (for example "Heathrow") are unrecorded; the fix has not been
+  re-run through Claude Code; the other review findings on #11 (blocking `httpx.get`, error categories,
+  cache expiry) are still open in issue #19.
+
 ### Tools
 | Tool | Tests | What happened when Claude Code called it |
 |---|---|---|
