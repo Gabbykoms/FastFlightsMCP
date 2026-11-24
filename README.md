@@ -6,7 +6,7 @@ An [MCP](https://modelcontextprotocol.io) server that lets AI assistants (Claude
 
 The assistant calls FastFlightsMCP's tools, gets structured flight data back, and reasons over it: comparing options, flexing dates, and explaining trade-offs.
 
-> **Status:** Early design / pre-alpha. This README describes the intended shape of the project. Nothing below is implemented yet.
+> **Status:** Week 9. `search_flights` and `search_airports` are implemented and tested, and were run live through Claude Code (see `CHECKS.md`). `search_multi_city`, `find_cheapest_dates`, `get_price_insight`, caching, hosting and the `uvx` package are not implemented yet; the sections for them below describe the plan. `search_flights` supports adults only for now: children and infants are rejected.
 
 ---
 
@@ -67,19 +67,19 @@ Search one-way or round-trip flights for specific dates.
 
 | Param            | Type                                                  | Required | Notes                              |
 | ---------------- | ----------------------------------------------------- | -------- | ---------------------------------- |
-| `origin`         | string                                                | yes      | IATA code, e.g. `JFK`              |
-| `destination`    | string                                                | yes      | IATA code, e.g. `LIS`              |
-| `depart_date`    | date (`YYYY-MM-DD`)                                   | yes      |                                    |
-| `return_date`    | date                                                  | no       | Omit for one-way                   |
-| `adults`         | int                                                   | no       | Default `1`                        |
-| `children`       | int                                                   | no       | Default `0`                        |
-| `infants`        | int                                                   | no       | Default `0`                        |
-| `cabin`          | `economy` \| `premium_economy` \| `business` \| `first` | no       | Default `economy`                  |
-| `max_stops`      | int                                                   | no       | `0` = nonstop only                 |
-| `max_price`      | int                                                   | no       | In `currency`                      |
-| `currency`       | string                                                | no       | Default `USD`                      |
-| `sort_by`        | `best` \| `price` \| `duration` \| `departure`        | no       | Default `best`                     |
-| `limit`          | int                                                   | no       | Default `10`                       |
+| `origin`         | list of strings                                       | yes      | 1 to 10 distinct IATA codes, e.g. `["JFK","EWR"]` |
+| `destination`    | list of strings                                       | yes      | 1 to 10 distinct IATA codes        |
+| `depart_date`    | string (`YYYY-MM-DD`)                                 | yes      |                                    |
+| `cabin`          | `economy` \| `premium_economy` \| `business` \| `first` | yes      |                                    |
+| `return_date`    | string (`YYYY-MM-DD`)                                 | no       | Omit for one-way                   |
+| `adults`         | int, 1 to 9                                           | no       | Default `1`                        |
+| `children`, `infants_in_seat`, `infants_on_lap` | int, 0 to 8             | no       | Default `0`; above `0` is rejected for now (`UNSUPPORTED_FILTER`) |
+| `currency`       | string                                                | no       | 3-letter code, default `USD`       |
+| `budget`         | number                                                | no       | Per person, whole trip             |
+| `strict_budget`  | bool                                                  | no       | Default `false`; see `spec.md`     |
+| `max_stops`      | int, 0 to 2                                           | no       | Per leg; `0` = nonstop only        |
+
+Unknown arguments are rejected. Prices are per person. A search stops after 10 upstream requests, and the result says so when that may have hidden better options.
 
 ### `search_multi_city`
 Search an itinerary with 2 to 6 legs (e.g. `JFK→LHR`, `LHR→CDG`, `CDG→JFK`).
@@ -97,31 +97,28 @@ Return Google's "prices are currently low / typical / high" signal for a route w
 
 ## Example response
 
+Real output of `search_flights` (shortened: one of five results, one of three origins), recorded through Claude Code on 2026-11-23:
+
 ```json
 {
-  "query": {
-    "origin": "JFK",
-    "destination": "LIS",
-    "depart_date": "2027-03-10",
-    "return_date": "2027-03-17",
-    "adults": 1,
-    "cabin": "economy"
-  },
-  "price_level": "low",
+  "query": {"origin": ["JFK", "LGA", "EWR"], "destination": ["LIS"], "depart_date": "2027-01-22",
+            "return_date": null, "cabin": "economy", "adults": 1, "currency": "USD"},
+  "fetched_at": "2026-11-24T04:35:56Z",
+  "cache_hit": false,
   "results": [
     {
-      "price": 512,
+      "id": "fl_769daf1f765e50ad",
+      "legs": [{"origin": "EWR", "destination": "LIS",
+                "departure": "2027-01-22T17:40:00-05:00", "arrival": "2027-01-23T05:25:00+00:00",
+                "duration_minutes": 405, "stops": 0,
+                "segments": [{"airline": "Tap Air Portugal", "flight_number": "TP 202"}]}],
+      "price_per_person": 404,
       "currency": "USD",
-      "airlines": ["TAP Air Portugal"],
-      "stops": 0,
-      "duration_minutes": 405,
-      "departure": "2027-03-10T19:30",
-      "arrival": "2027-03-11T07:15",
-      "is_best": true
+      "total_stops": 0,
+      "recommendation_reasons": ["Nonstop", "Total travel time 6h 45m", "404 USD per person"]
     }
   ],
-  "google_flights_url": "https://www.google.com/travel/flights?tfs=...",
-  "fetched_at": "2027-01-04T15:02:11Z"
+  "recommended_id": "fl_769daf1f765e50ad"
 }
 ```
 
@@ -197,25 +194,19 @@ claude mcp add fastflights -- uvx fastflights-mcp
 
 | Env var                   | Default  | Description                                       |
 | ------------------------- | -------- | ------------------------------------------------- |
-| `FASTFLIGHTS_CURRENCY`    | `USD`    | Default currency for prices                       |
-| `FASTFLIGHTS_LANGUAGE`    | `en`     | Language for Google Flights results               |
-| `FASTFLIGHTS_CACHE_TTL` | TBD | Post-Week-9 setting; cache backend and TTL remain under review |
-| `FASTFLIGHTS_RATE_LIMIT`  | `10`     | Max outbound requests per minute                  |
-| `SEARCHAPI_API_KEY` | Required | Server-only SearchApi credential; never commit or return it |
+| `SEARCHAPI_API_KEY` | Required | Server-only SearchApi credential; never commit or return it. Claude Code passes the launching shell's variables to the server, so `export` it before running `claude`. No other variables are implemented yet. |
 
 ---
 
-## Project layout (planned)
+## Project layout
 
 ```
 FastFlightsMCP/
 ├── src/fastflights_mcp/
 │   ├── server.py        # MCPServer, tool registration, shared main() entry point
 │   ├── tools/           # One module per tool
-│   ├── google/          # SearchApi requests and response normalization
-│   ├── models.py        # Pydantic input/output schemas
-│   ├── airports.py      # IATA lookup (bundled airport dataset)
-│   └── cache.py         # TTL cache + rate limiter
+│   ├── provider.py      # SearchApi flight adapter: requests, retries, request cap, mapping
+│   └── ...              # models, cache and rate limiter are planned, not written yet
 ├── tests/
 │   ├── fixtures/        # Saved Google Flights responses for offline tests
 │   ├── test_search_flights.py  # In-memory MCP protocol tests
@@ -231,7 +222,9 @@ FastFlightsMCP/
 ├── CLAUDE.md            # Working rules
 ├── CHECKS.md            # Actual verification output and findings
 ├── transcripts/
-│   └── week09-claude-code.txt
+│   ├── week09-claude-code-1-airport-lookup-failed.txt
+│   ├── week09-claude-code.txt
+│   └── week09-claude-code-expanded-tool-calls.txt
 ├── lab.md               # Downloaded professor's instructions
 └── README.md
 ```
@@ -242,7 +235,7 @@ FastFlightsMCP/
 
 Week 9 follows the lab's commit sequence: working rules, approved plan, failing tests per tool, implementation per tool, then checks and findings. After verification, tag the submission `week09-submitted` and push the commits and tag. The team makes one Moodle submission.
 
-- [ ] **v0.1** Core server, `search_flights` (one-way + round-trip), `search_airports`
+- [x] **v0.1** Core server, `search_flights` (one-way + round-trip), `search_airports` (Week 9; one-way verified live, round trips verified only against recorded responses)
 - [ ] **v0.2** Caching, rate limiting, and provider-response handling with fixture-based tests
 - [ ] **v0.3** `find_cheapest_dates` and `search_multi_city`
 - [ ] **v0.4** Price insights, streamable HTTP transport for remote hosting
