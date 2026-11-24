@@ -308,6 +308,29 @@ Failure to finish provider selection must not produce a made-up total fare.
 Fixture-based proof of complete multi-city pricing and customization is required
 before release; an upstream single-leg response is not sufficient evidence.
 
+**Implemented so far (2026-11-24): complete-itinerary search only.** `customization` and
+`STALE_SELECTION` are not implemented, so the tool has no `customization` argument yet; they
+wait for the snapshot expiry and session scope decisions above. Decisions and recorded
+provider behavior (`tests/fixtures/searchapi/README.md`, "Multi-city"):
+
+- SearchApi answers one leg per request. A trip of N legs is a chain of N requests, each
+  following an option's `departure_token`; the last leg's `price` is the whole-trip total
+  (not verified to equal the sum of three separate fares; 2+ adults not recorded).
+- Trying every combination would exceed the 10-request cap, so each step continues only the
+  best `min(3, (10 - 1) // (legs - 1))` partial trips, ranked by projected price, then travel
+  time. That is 4, 7, 10, 9 and 6 requests for 2, 3, 4, 5 and 6 legs. Whenever a partial trip
+  was left out, or the cap was reached, the result says it is not exhaustive.
+- A token can lead nowhere: HTTP 200 with the `error` "Google Flights didn't return any
+  results." That exact text is a skipped branch; every other `error` body is
+  `UPSTREAM_DATA_ERROR`.
+- Same city (`fastflights_mcp.places.same_city`): same country, and either the same
+  `airportsdata` city name and subdivision or at most 100 km apart. Every airport of a leg's
+  destination set must be in the same city as every airport of the next leg's origin set, and
+  a leg whose every origin and destination pair is in one city is rejected.
+- The 24 hours for an airport change are elapsed time from UTC offsets. Children and infants
+  are rejected with `UNSUPPORTED_FILTER`, as in `search_flights` (section 3.3).
+- No new dependency: `places` reuses the pinned `airportsdata`.
+
 ### 3.5 `find_cheapest_dates`
 
 **When to call:** a traveler supplies a route and a flexible date window and

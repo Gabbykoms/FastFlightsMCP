@@ -23,10 +23,20 @@ async def fetch_flight_candidates(**query: Any) -> list[dict[str, Any]]:
     return await provider.fetch_flight_candidates(**query)
 
 
-# Registered after `mcp` and the adapter exist: the tool module reads this module at call time.
+async def fetch_multi_city_candidates(**query: Any) -> list[dict[str, Any]]:
+    """Adapter boundary for search_multi_city: complete multi-city trip candidates.
+
+    Delegates to provider.py; tests replace this attribute with a fake.
+    """
+    return await provider.fetch_multi_city_candidates(**query)
+
+
+# Registered after `mcp` and the adapters exist: the tool module reads this module at call time.
 from fastflights_mcp.tools import search_flights as _search_flights  # noqa: E402
+from fastflights_mcp.tools import search_multi_city as _search_multi_city  # noqa: E402
 
 _search_flights.register(mcp)
+_search_multi_city.register(mcp)
 
 
 def main(argv: Sequence[str] | None = None) -> None:

@@ -18,6 +18,15 @@ Maintenance guide
 * Times arrive as local date plus HH:MM with no offset. `airportsdata` maps an IATA code to
   an IANA zone and `zoneinfo` supplies the offset for that date. An airport it does not
   know makes the option unusable; an offset is never guessed.
+* Multi-city is a chain of one request per leg. Each response lists the options for that one
+  leg, and an option's `departure_token` selects it for the next request; the last leg's
+  options carry the whole-trip `price`. Trying every combination would cost far more than
+  MAX_REQUESTS_PER_CALL, so only the best MULTI_CITY_BEAM partial trips are continued at
+  each step (ranked by projected price, then travel time) and the result says when anything
+  was left out. A token can lead nowhere: SearchApi then answers HTTP 200 with the `error`
+  "Google Flights didn't return any results." (recorded in
+  tests/fixtures/searchapi/multi_city_leg3_no_results.json). That branch is skipped; any other
+  `error` body is still UPSTREAM_DATA_ERROR.
 * HTTP and transport failures propagate as httpx exceptions; the tool maps them to
   UPSTREAM_* categories. This module raises ToolError only for CONFIGURATION_ERROR,
   UPSTREAM_DATA_ERROR and UNSUPPORTED_FILTER, and never puts provider text or the key in
@@ -29,9 +38,10 @@ Maintenance guide
 import asyncio
 import functools
 import hashlib
+import json
 import logging
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any
 from zoneinfo import ZoneInfo
 
@@ -47,6 +57,9 @@ MAX_REQUESTS_PER_CALL = 10
 MAX_RETRIES = 1
 RETRY_DELAY_SECONDS = 1.0
 REQUEST_TIMEOUT_SECONDS = 20.0
+MULTI_CITY_BEAM = 3
+AIRPORT_CHANGE_MIN_GAP = timedelta(hours=24)
+DEAD_BRANCH_ERROR = "Google Flights didn't return any results."
 TRAVEL_CLASS = {"economy": "economy", "premium_economy": "premium_economy",
                 "business": "business", "first": "first_class"}
 
@@ -189,8 +202,12 @@ def _data_error(reason: str) -> ToolError:
 
 
 async def _request(client: httpx.AsyncClient, key: str, params: dict[str, str],
-                   usage: _Usage) -> dict[str, Any]:
-    """One logical request: retries 5xx once; every attempt counts toward the cap."""
+                   usage: _Usage, dead_branch_ok: bool = False) -> dict[str, Any]:
+    """One logical request: retries 5xx once; every attempt counts toward the cap.
+
+    With `dead_branch_ok`, SearchApi's "no results" error body is returned as it is (it has
+    no options) instead of raising, so a multi-city search can skip that branch.
+    """
     attempt = 0
     while True:
         if usage.used >= MAX_REQUESTS_PER_CALL:
@@ -210,6 +227,8 @@ async def _request(client: httpx.AsyncClient, key: str, params: dict[str, str],
             body = response.json()
         except ValueError:
             raise _data_error("The provider response was not valid JSON.") from None
+        if isinstance(body, dict) and dead_branch_ok and body.get("error") == DEAD_BRANCH_ERROR:
+            return body
         if not isinstance(body, dict) or "error" in body:
             raise _data_error("The provider response could not be interpreted.")
         return body
@@ -284,6 +303,92 @@ async def fetch_flight_candidates(**query: Any) -> Candidates:
                 except UnusableOption as exc:
                     unusable += 1
                     logger.warning("Dropped an unusable SearchApi option: %s", exc)
+    if unusable and not candidates:
+        raise _data_error("The provider returned results that could not be validated.")
+    return Candidates(candidates, exhaustive=exhaustive, requests_used=usage.used)
+
+
+def _multi_city_params(query: dict[str, Any], departure_token: str | None = None) -> dict[str, str]:
+    legs = [{"departure_id": ",".join(leg["origin"]), "arrival_id": ",".join(leg["destination"]),
+             "outbound_date": leg["depart_date"]} for leg in query["legs"]]
+    params = {"engine": "google_flights", "flight_type": "multi_city",
+              "multi_city_json": json.dumps(legs), "travel_class": TRAVEL_CLASS[query["cabin"]],
+              "adults": str(query["adults"]), "children": str(query["children"]),
+              "infants_in_seat": str(query["infants_in_seat"]),
+              "infants_on_lap": str(query["infants_on_lap"]), "currency": query["currency"]}
+    if departure_token:
+        params["departure_token"] = departure_token
+    return params
+
+
+def _follows(previous: dict[str, Any], leg: dict[str, Any]) -> bool:
+    """Can `leg` come after `previous`? Elapsed time, not clock readings: the two timestamps
+    carry their own UTC offsets. A different departure airport needs a full day in between."""
+    landed, departs = datetime.fromisoformat(previous["arrival"]), datetime.fromisoformat(
+        leg["departure"])
+    if departs < landed:
+        return False
+    return leg["origin"] == previous["destination"] or departs - landed >= AIRPORT_CHANGE_MIN_GAP
+
+
+async def fetch_multi_city_candidates(**query: Any) -> Candidates:
+    """Search a chain of 2 to 6 legs and return normalized, complete multi-city candidates."""
+    key = (os.environ.get("SEARCHAPI_API_KEY") or "").strip()
+    if not key:
+        raise ToolError("CONFIGURATION_ERROR: SEARCHAPI_API_KEY is not set on the server. "
+                        "The operator must configure it.")
+    requested, usage = query["legs"], _Usage()
+    last = len(requested) - 1
+    width = min(MULTI_CITY_BEAM, (MAX_REQUESTS_PER_CALL - 1) // last)
+    exhaustive, unusable = True, 0
+    candidates: list[dict[str, Any]] = []
+    frontier: list[dict[str, Any] | None] = [None]  # partial trips to continue; None = nothing chosen yet
+    async with httpx.AsyncClient(transport=_TRANSPORT,
+                                 timeout=httpx.Timeout(REQUEST_TIMEOUT_SECONDS)) as client:
+        try:
+            for step, spec in enumerate(requested):
+                partials: list[dict[str, Any]] = []
+                for parent in frontier:
+                    token = parent["token"] if parent else None
+                    body = await _request(client, key, _multi_city_params(query, token), usage,
+                                          dead_branch_ok=True)
+                    link = _link(body)
+                    for option in _options(body):
+                        try:
+                            leg = map_leg(option, link)
+                            _within(leg, spec["origin"], spec["destination"])
+                            price = _price(option)
+                            next_token = option.get("departure_token") if isinstance(option, dict) else None
+                            if step < last and not (isinstance(next_token, str) and next_token):
+                                raise UnusableOption("option cannot be continued")
+                        except UnusableOption as exc:
+                            unusable += 1
+                            logger.warning("Dropped an unusable SearchApi option: %s", exc)
+                            continue
+                        limit = spec.get("max_stops")
+                        if (limit is not None and leg["stops"] > limit) or (
+                                parent and not _follows(parent["legs"][-1], leg)):
+                            continue
+                        legs = (parent["legs"] if parent else []) + [leg]
+                        if step == last:
+                            candidates.append(_candidate(legs, price, query, link))
+                        else:
+                            partials.append({"legs": legs, "token": next_token, "price": price,
+                                             "minutes": sum(x["duration_minutes"] for x in legs),
+                                             "id": _identify(legs)})
+                if step == last:
+                    break
+                partials.sort(key=lambda p: (p["price"], p["minutes"], p["id"]))
+                if len(partials) > width:
+                    exhaustive = False
+                    logger.warning("Multi-city search kept the best %d of %d partial trips.",
+                                   width, len(partials))
+                frontier = partials[:width]
+                if not frontier:
+                    break
+        except _CapReached:
+            exhaustive = False
+            logger.warning("Request limit reached; the search is not exhaustive.")
     if unusable and not candidates:
         raise _data_error("The provider returned results that could not be validated.")
     return Candidates(candidates, exhaustive=exhaustive, requests_used=usage.used)

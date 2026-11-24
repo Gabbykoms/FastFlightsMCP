@@ -131,6 +131,33 @@
   unrecorded; children and infants are rejected (stopgap) because the provider returns a
   party total; no Claude Code check yet.
 
+### `search_multi_city`: complete-itinerary search (2026-11-24)
+
+- Plan: `search_multi_city.plan.md` (#24). Tests and four recordings first (#25: 141 failing
+  tests, commits `bef5278` and `df126cd`), then this implementation:
+  `src/fastflights_mcp/places.py`, `provider.fetch_multi_city_candidates`,
+  `src/fastflights_mcp/tools/search_multi_city.py`, and the server hook and registration.
+- Command: `python3 -m pytest tests -q`. Before the implementation: 163 passed, 141 failed or
+  errored for lack of the feature, plus 84 errors that are Patrick's tests-first baselines.
+  Actual result now: **304 passed, 84 errors** (the same 84). New tests: 21 same-city, 38
+  adapter, 82 tool.
+- All new tests are offline: the adapter tests serve the recorded 3-leg chain (leg 1 and leg 2
+  cut down to the options that have a recorded follow-up, which is synthetic) and synthetic
+  chains through an `httpx.MockTransport`; the tool tests use a fake adapter. No key, no network.
+- Mutation check: the code was deliberately broken in 30 ways (radius, country, subdivision
+  and distance rules; 24h gap and its `>=` boundary; chronology; beam width and the cap
+  formula; per-leg and inherited stop limits; ranking tie-break; pruning not reported; every
+  error body treated as a dead branch; a dead branch treated as fatal; airports not checked;
+  price not from the last step; route-gap and one-city-leg checks; totals not recomputed; leg
+  count; transfer and not-exhaustive notes; children allowed; date order; unknown arguments).
+  The tests caught all 30.
+- Test-side bug found while implementing: the helper `step_tokens` in `tests/test_provider.py`
+  looked for tokens of the wrong step, which made three beam tests fail against a correct
+  adapter; the helper was fixed, the assertions were not changed.
+- **Not verified live:** nothing yet. Recorded evidence is one 3-leg chain (4 billed requests).
+  Not verified: the final price equals the sum of separate fares; 2+ adults; round-trip-like
+  routes; why one recorded branch was dead; customization (not implemented).
+
 ### `search_airports`: API key kept out of URLs and logs (2026-11-23)
 
 - Found while reviewing PR #11 (Nadia's tool, merged 2026-11-23): `_location_search` sent
