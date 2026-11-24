@@ -1,0 +1,34 @@
+Expanded tool calls for transcripts/week09-claude-code.txt (same fresh Claude Code
+session, 2026-11-23 11:35 PM, main at e8b2ffb). The /export file shows these three
+calls collapsed ("Called fastflights 3 times"); this is the terminal output with
+them expanded (ctrl+o), copied in by hand and condensed: JSON laid out on fewer lines,
+the search_flights results summarized one per line (values unchanged), link text shortened.
+
+fastflights - search_airports (MCP)(query: "New York")
+{"matches": [
+  {"iata": "JFK", "name": "John F. Kennedy International Airport", "city": "New York", "country": "US"},
+  {"iata": "LGA", "name": "LaGuardia Airport", "city": "New York", "country": "US"},
+  {"iata": "EWR", "name": "Newark Liberty International Airport", "city": "Newark", "country": "US"}],
+ "message": "Showing airports for 'New York', the best of 5 matching places."}
+
+fastflights - search_airports (MCP)(query: "Lisbon")
+{"matches": [
+  {"iata": "LIS", "name": "Lisbon Airport", "city": "Lisbon", "country": "PT"}],
+ "message": "Showing airports for 'Lisbon, Portugal', the best of 5 matching places."}
+
+fastflights - search_flights (MCP)(origin: ["JFK","LGA","EWR"], destination: ["LIS"],
+  depart_date: "2027-01-22", cabin: "economy", adults: 1)
+query: origin [JFK, LGA, EWR], destination [LIS], depart_date 2027-01-22,
+  return_date null, cabin economy, adults 1, children 0, infants_in_seat 0,
+  infants_on_lap 0, currency USD, budget null, strict_budget false, max_stops null
+fetched_at: 2026-11-24T04:35:56.623260Z   cache_hit: false   message: null
+recommended_id: fl_769daf1f765e50ad   within_budget_found: null
+results (5, all nonstop, price_per_person in USD):
+  fl_769daf1f765e50ad  TP 202 Tap Air Portugal  EWR->LIS  2027-01-22T17:40-05:00 -> 2027-01-23T05:25+00:00  405 min  $404
+      recommendation_reasons: Nonstop; Total travel time 6h 45m; 404 USD per person
+  fl_37580a63b9abd431  TP 204 Tap Air Portugal  EWR->LIS  2027-01-22T00:10-05:00 -> 2027-01-22T12:05+00:00  415 min  $404
+  fl_a1f57c7e9d85fbf8  TP 210 Tap Air Portugal  JFK->LIS  2027-01-22T22:00-05:00 -> 2027-01-23T10:05+00:00  425 min  $404
+  fl_186da4b8831551ab  DL 272 Delta             JFK->LIS  2027-01-22T20:20-05:00 -> 2027-01-23T08:00+00:00  400 min  $527
+  fl_8d10437ef564bbe6  UA 64  United            EWR->LIS  2027-01-22T20:25-05:00 -> 2027-01-23T08:10+00:00  405 min  $527
+Each result also carries legs/segments, google_flights_url (https://www.google.com/travel/flights/search?tfs=...),
+  separate_tickets null, budget_status "not_specified", budget_overage null.

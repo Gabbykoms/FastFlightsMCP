@@ -163,14 +163,37 @@
   **163 passed** (154 on `main` plus 9). Six deliberate breaks (last place used, no country, duplicates
   kept, blank result on an unreadable shape, response shape unchecked, `query` again) were each caught.
 - Recording: `tests/fixtures/searchapi/location_search_new_york.json`, one billed request.
-- **Not verified:** airport-name queries (for example "Heathrow") are unrecorded; the fix has not been
-  re-run through Claude Code; the other review findings on #11 (blocking `httpx.get`, error categories,
-  cache expiry) are still open in issue #19.
+- **Re-run after the fix (2026-11-23, fresh session on `main` at `e8b2ffb`):** `search_airports("New York")`
+  returned JFK, LGA and EWR; `search_airports("Lisbon")` returned LIS; `search_flights` then ran with those
+  codes. A first re-run attempt reused the old session and still failed, because an MCP server process
+  keeps running the code it started with: restart Claude Code after changing server code.
+- **Not verified:** airport-name queries (for example "Heathrow") are unrecorded; the other review
+  findings on #11 (blocking `httpx.get`, error categories, cache expiry) are still open in issue #19.
 
 ### Tools
+Tests: `python3 -m pytest tests -q` gives 163 passed. `main` also has 84 errors, which are the tests-first
+baselines for `find_cheapest_dates` and `get_price_insight` (their tools are not written yet).
+
 | Tool | Tests | What happened when Claude Code called it |
 |---|---|---|
-| | | |
+| `search_airports` | 15 | First session: 4 calls, all failed (HTTP 400, parameter must be `q`); fixed in #22. Final session: "New York" gave JFK, LGA, EWR and "Lisbon" gave LIS. |
+| `search_flights` | 142 (56 tool, 86 adapter) | Real one-way search JFK/EWR/LGA to LIS on 2027-01-22, 1 adult, economy: 5 nonstop itineraries, recommended TP 202 EWR to LIS at $404 (Delta and United $527). Identical in both sessions. |
+
+Transcripts: `transcripts/week09-claude-code-1-airport-lookup-failed.txt` (first session),
+`transcripts/week09-claude-code.txt` (final session; its tool calls are collapsed) and
+`transcripts/week09-claude-code-expanded-tool-calls.txt` (the same calls expanded, condensed by hand).
+
+### What we found
+- **Key passing:** Claude Code passes the launching shell's environment to the server, so no `env`
+  entry in `.mcp.json` was needed. The MCP SDK's own stdio client does not, so `client.py` forwards the key.
+- **A bug the offline tests could not catch:** `search_airports` sent `query` where SearchApi needs `q`.
+  The tests faked the upstream call, so only a live Claude Code run found it. The model's only signal was a
+  generic "provider returned an error"; it recovered by using airport codes it already knew.
+- **Stale server process:** after the fix the first re-run still failed until Claude Code was restarted.
+- **`orclaude`:** not installed on this machine; the transcripts use plain `claude` (Claude Enterprise).
+  Whether that is acceptable for the submission is unconfirmed.
+- **Not covered live:** round trips, 2+ adults, children and infants (rejected for now), SearchApi's "no flights"
+  response and airport-name queries.
 
 ### Output of `client.py`
 Command: `SEARCHAPI_API_KEY=<set, not shown> python3 client.py`, run on 2026-11-23 at about
@@ -458,7 +481,8 @@ This is why the server logs with `logging` (stderr) and prints nothing.
 
 This task needs a server. The tools wrap an external, billed system (SearchApi) that
 needs a credential, and the server keeps `SEARCHAPI_API_KEY` in its own environment
-so neither host nor model ever sees it. Team Project 2 also requires the same tools
+so the model never sees it. The server process and the host environment that launches it do hold it
+(verified 2026-11-23: Claude Code passes the launching shell's variables to the server). Team Project 2 also requires the same tools
 in two hosts (Claude Code and our own agent loop); a server lets both discover and
 call identical tools and schemas without sharing code. One piece could have been a
 skill or script instead: `search_airports` is a single lookup that turns a city name
@@ -474,7 +498,8 @@ search results. Nothing is booked, purchased, sent, or saved for later, so there
 no pending request to record yet. The cost of each search is the one real-world
 effect. Invalid requests are rejected before any upstream call, and in the agent
 loop the step cap limits how many tool calls a run can make; the $0.05 cap covers
-model tokens only, and a cap on billed searches is still open in `spec.md`.
+model tokens only. `search_flights` caps one call at 10 upstream requests; per-run and per-caller
+allowances for billed searches are still open in `spec.md`.
 
 None of the tools planned for Team Project 2 has a side effect either; the spec
 excludes booking and payment. The first tool that would need the gate is a
